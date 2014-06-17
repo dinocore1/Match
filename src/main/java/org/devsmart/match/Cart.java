@@ -30,16 +30,32 @@ public abstract class Cart {
         mNumFeatures = numFeatures;
     }
 
-    public abstract double errorFunction(Collection<PointValuePair> dataSet);
+    protected abstract MultivariateFunction createModel(Collection<PointValuePair> dataSet);
+    protected abstract double errorFunction(Collection<PointValuePair> dataSet);
+    protected abstract boolean shouldContinue(BestSplit split);
 
     public TreeNode createTree(Collection<PointValuePair> dataSet) {
 
+        TreeNode retval = null;
 
         BestSplit bestSplit = chooseBestSplit(dataSet);
+        if(shouldContinue(bestSplit)){
+            retval = new TreeNode();
+            retval.featureToSplit = bestSplit.bestFeature;
+            retval.valueOfSplit = bestSplit.bestValue;
+            retval.left = createTree(bestSplit.left);
+            retval.right = createTree(bestSplit.right);
+
+        } else {
+            retval = new TreeNode();
+            retval.model = createModel(dataSet);
+        }
 
 
-        return null;
+        return retval;
     }
+
+
 
 
     Collection<PointValuePair>[] binSplit(Collection<PointValuePair> dataSet, final int featureIndex, final double value){
@@ -77,6 +93,8 @@ public abstract class Cart {
         double bestError;
         double bestValue;
         int bestFeature;
+        Collection<PointValuePair> right;
+        Collection<PointValuePair> left;
     }
 
     BestSplit chooseBestSplit(Collection<PointValuePair> dataSet) {
@@ -97,6 +115,8 @@ public abstract class Cart {
                     retval.bestError = error;
                     retval.bestFeature = featIndex;
                     retval.bestValue = splitValue;
+                    retval.right = pair[0];
+                    retval.left = pair[1];
 
                 }
             }
