@@ -18,12 +18,16 @@ public abstract class Cart {
 
     private final int mNumFeatures;
 
-    public class TreeNode {
+    public static class TreeNode {
         double valueOfSplit;
         int featureToSplit;
         TreeNode right;
         TreeNode left;
         MultivariateFunction model;
+
+        boolean isLeaf() {
+            return model != null;
+        }
     }
 
     public Cart(int numFeatures) {
@@ -55,7 +59,18 @@ public abstract class Cart {
         return retval;
     }
 
-
+    public static double value(double[] point, TreeNode tree) {
+        if(tree.isLeaf()){
+            return tree.model.value(point);
+        } else {
+            double value = point[tree.featureToSplit];
+            if(value > tree.valueOfSplit) {
+                return value(point, tree.right);
+            } else {
+                return value(point, tree.left);
+            }
+        }
+    }
 
 
     Collection<PointValuePair>[] binSplit(Collection<PointValuePair> dataSet, final int featureIndex, final double value){

@@ -5,6 +5,7 @@ import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -65,6 +66,17 @@ public class CartTest {
             }
         };
         Cart.TreeNode result = cart.createTree(data);
+
+        assertEquals(0.0 , Cart.value(new double[]{1, -2.0}, result), 0.3);
+        assertEquals(0.0 , Cart.value(new double[]{1, 0.13}, result), 0.3);
+        assertEquals(1.0 , Cart.value(new double[]{1, 0.217}, result), 0.3);
+        assertEquals(2.0 , Cart.value(new double[]{1, 0.5}, result), 0.3);
+        assertEquals(2.0 , Cart.value(new double[]{1, 0.41}, result), 0.3);
+        assertEquals(2.0 , Cart.value(new double[]{1, 0.57}, result), 0.3);
+        assertEquals(3.0 , Cart.value(new double[]{1, 0.62}, result), 0.3);
+        assertEquals(4.0 , Cart.value(new double[]{1, 0.83}, result), 0.3);
+        assertEquals(4.0 , Cart.value(new double[]{1, 30}, result), 0.3);
+
         System.out.println("done");
 
     }
