@@ -104,12 +104,12 @@ public abstract class Cart {
     }
 
 
-    static class BestSplit {
-        double bestError;
-        double bestValue;
-        int bestFeature;
-        Collection<PointValuePair> right;
-        Collection<PointValuePair> left;
+    public static class BestSplit {
+        public double bestError;
+        public double bestValue;
+        public int bestFeature;
+        public Collection<PointValuePair> right;
+        public Collection<PointValuePair> left;
     }
 
     BestSplit chooseBestSplit(Collection<PointValuePair> dataSet) {
