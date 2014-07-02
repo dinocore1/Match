@@ -125,6 +125,10 @@ public abstract class Cart {
 
                 Collection<PointValuePair>[] pair = binSplit(dataSet, featIndex, splitValue);
 
+                if(pair[0].size() < 2 || pair[1].size() < 2){
+                    continue;
+                }
+
                 double error = errorFunction(pair[0]) + errorFunction(pair[1]);
                 if(error < retval.bestError){
                     retval.bestError = error;
