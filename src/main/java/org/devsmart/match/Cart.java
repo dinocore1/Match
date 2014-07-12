@@ -116,7 +116,7 @@ public abstract class Cart {
 
         BestSplit retval = new BestSplit();
 
-        retval.bestError = Double.POSITIVE_INFINITY;
+        retval.bestError = Double.NaN;
         retval.bestValue = Double.NaN;
         retval.bestFeature = -1;
 
@@ -130,7 +130,7 @@ public abstract class Cart {
                 }
 
                 double error = errorFunction(pair[0]) + errorFunction(pair[1]);
-                if(error < retval.bestError){
+                if(Double.isNaN(retval.bestError) ||  error < retval.bestError){
                     retval.bestError = error;
                     retval.bestFeature = featIndex;
                     retval.bestValue = splitValue;
