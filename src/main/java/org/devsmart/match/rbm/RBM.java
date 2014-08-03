@@ -6,6 +6,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Random;
 
@@ -67,6 +68,15 @@ public class RBM {
             }
         }
         return visible;
+    }
+
+    public double freeEnergy(RealVector visible) {
+        double sum = 0;
+        for(int j=0;j<numHidden;j++){
+            sum += FastMath.log(1 + FastMath.exp(b.getEntry(j) + W.getColumnVector(j).dotProduct(visible)));
+        }
+
+        return -visible.dotProduct(a) - sum;
     }
 
 }

@@ -1,14 +1,11 @@
 package org.devsmart.match.rbm;
 
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -49,6 +46,9 @@ public class RBMTrainer {
         } else {
             rbm.a = new ArrayRealVector(rbm.numVisible);
             for(int i=0;i<rbm.numVisible;i++){
+                if(means[i] == 0){
+                    means[i] = Double.MIN_VALUE;
+                }
                 rbm.a.setEntry(i, FastMath.log(means[i] / (1-means[i])));
             }
         }
