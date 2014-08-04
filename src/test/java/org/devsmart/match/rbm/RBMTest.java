@@ -1,4 +1,4 @@
-package org.devsmart.match;
+package org.devsmart.match.rbm;
 
 
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -33,7 +33,6 @@ public class RBMTest {
                 0, 0, 0}));
 
         RBMTrainer trainer = new RBMTrainer(rbm);
-        trainer.setInitialValues(trainingData.iterator());
         trainer.train(trainingData, 1000);
 
         RealVector hidden = rbm.activateHidden(new ArrayRealVector(new double[]{

@@ -20,7 +20,7 @@ public class RBMTrainer {
     }
 
 
-    public void setInitialValues(Iterator<RealVector> miniBatch) {
+    public static void setInitialValues(RBM rbm, Iterator<RealVector> miniBatch) {
 
         //init weights zero-mean Gaussian with stddev of 0.01
         for(int i=0;i<rbm.numVisible;i++){
@@ -56,29 +56,11 @@ public class RBMTrainer {
 
 
     public void train(Collection<RealVector> trainingData, int numEpic) {
+        setInitialValues(rbm, trainingData.iterator());
         for(int i=0;i<numEpic;i++){
             for(RealVector trainingVisible : trainingData){
-                RealVector negitive = gibbsSample(trainingVisible, numGibbsSteps);
-
-                RealVector hiddenPositive = rbm.activateHidden(trainingVisible);
-                RealVector hiddenNegitive = rbm.activateHidden(negitive);
-
-                RealMatrix gradient = trainingVisible.outerProduct(hiddenPositive).subtract(negitive.outerProduct(hiddenNegitive));
-                rbm.W = rbm.W.add(gradient.scalarMultiply(learningRate));
-
-                rbm.a = rbm.a.add(trainingVisible.subtract(negitive).mapMultiplyToSelf(learningRate));
-                rbm.b = rbm.b.add(hiddenPositive.subtract(hiddenNegitive).mapMultiplyToSelf(learningRate));
-
-
+                ContrastiveDivergence.train(rbm, trainingVisible, numGibbsSteps, learningRate);
             }
         }
-    }
-
-    public RealVector gibbsSample(RealVector input, int numSteps) {
-        for(int k=0;k<numSteps;k++) {
-            RealVector hidden = rbm.activateHidden(input);
-            input = rbm.activateVisible(hidden);
-        }
-        return input;
     }
 }

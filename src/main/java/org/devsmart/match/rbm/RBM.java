@@ -42,9 +42,6 @@ public class RBM {
         this.b = new ArrayRealVector(numHidden);
     }
 
-
-    //i = visible
-    //j = hidden
     public RealVector activateHidden(RealVector visible) {
         RealVector hidden = new ArrayRealVector(numHidden);
         for(int j=0;j<numHidden;j++){
