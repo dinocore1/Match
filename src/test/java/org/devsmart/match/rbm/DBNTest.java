@@ -118,7 +118,7 @@ public class DBNTest {
                 .withRandom(new Random(1))
                 .build();
 
-
+/*
         DBNTrainer trainer = new DBNTrainer(dbn);
         ArrayList<RealVector> trainingData = new ArrayList<RealVector>();
         for(int i=0;i<10;i++){
@@ -145,6 +145,6 @@ public class DBNTest {
                     ));
         }
 
-
+*/
     }
 }
