@@ -14,17 +14,24 @@ public class ContrastiveDivergence {
         return input;
     }
 
-    public static void train(RBM rbm, RealVector trainingVisible, int numGibbsSteps, double learningRate) {
+    public RealMatrix WGradient;
+    public RealVector AGradient;
+    public RealVector BGradient;
+
+    public void train(RBM rbm, RealVector trainingVisible, int numGibbsSteps) {
         RealVector negitive = gibbsSample(rbm, trainingVisible, numGibbsSteps);
 
         RealVector hiddenPositive = rbm.activateHidden(trainingVisible);
         RealVector hiddenNegitive = rbm.activateHidden(negitive);
 
-        RealMatrix gradient = trainingVisible.outerProduct(hiddenPositive).subtract(negitive.outerProduct(hiddenNegitive));
-        rbm.W = rbm.W.add(gradient.scalarMultiply(learningRate));
+        WGradient = trainingVisible.outerProduct(hiddenPositive).subtract(negitive.outerProduct(hiddenNegitive));
+        AGradient = trainingVisible.subtract(negitive);
+        BGradient = hiddenPositive.subtract(hiddenNegitive);
 
-        rbm.a = rbm.a.add(trainingVisible.subtract(negitive).mapMultiplyToSelf(learningRate));
-        rbm.b = rbm.b.add(hiddenPositive.subtract(hiddenNegitive).mapMultiplyToSelf(learningRate));
+        //rbm.W = rbm.W.add(gradient.scalarMultiply(learningRate));
+
+        //rbm.a = rbm.a.add(trainingVisible.subtract(negitive).mapMultiplyToSelf(learningRate));
+        //rbm.b = rbm.b.add(hiddenPositive.subtract(hiddenNegitive).mapMultiplyToSelf(learningRate));
     }
 
 

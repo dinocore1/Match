@@ -33,7 +33,7 @@ public class RBMTest {
                 0, 0, 0}));
 
         RBMTrainer trainer = new RBMTrainer(rbm);
-        trainer.train(trainingData, 10000);
+        //trainer.train(trainingData, 10000);
 
         RealVector hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
                 0, 1, 1,

@@ -55,6 +55,7 @@ public class RBMTrainer {
     }
 
 
+    /*
     public void train(Collection<RealVector> trainingData, int numEpic) {
         setInitialValues(rbm, trainingData.iterator());
         for(int i=0;i<numEpic;i++){
@@ -63,4 +64,5 @@ public class RBMTrainer {
             }
         }
     }
+    */
 }
