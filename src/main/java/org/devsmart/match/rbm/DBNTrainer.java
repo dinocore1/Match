@@ -16,31 +16,27 @@ import java.util.concurrent.Future;
 
 public class DBNTrainer {
 
-    public interface Callback {
-        Collection<RealVector> createMiniBatch();
-    }
-
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
-    private final Callback mCallback;
+    private final MiniBatchCreator mMinibachCreator;
     private final DBN dbn;
     int numGibbsSteps = 1;
     double learningRate = 0.01;
-    int numEpocsPerLayer = 1000;
+    int numEpocsPerLayer = 100;
 
-    public DBNTrainer(DBN dbn, Callback callback){
+    public DBNTrainer(DBN dbn, MiniBatchCreator callback){
         this.dbn = dbn;
-        this.mCallback = callback;
+        this.mMinibachCreator = callback;
     }
 
     public void train() throws Exception {
         for(int layer=0;layer<dbn.rbms.size();layer++){
             RBM rbm = dbn.rbms.get(layer);
-            RBMTrainer.setInitialValues(rbm, mCallback.createMiniBatch().iterator());
+            RBMTrainer.setInitialValues(rbm, mMinibachCreator.createMiniBatch().iterator());
             for(int i=0;i<numEpocsPerLayer;i++){
 
-                Collection<RealVector> miniBatch = mCallback.createMiniBatch();
+                Collection<RealVector> miniBatch = mMinibachCreator.createMiniBatch();
                 ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(miniBatch.size());
-                for(RealVector input : mCallback.createMiniBatch()) {
+                for(RealVector input : mMinibachCreator.createMiniBatch()) {
                     tasks.add(mExecutorService.submit(new TrainingTask(input, layer)));
                 }
                 RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());

@@ -9,16 +9,18 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Random;
 
 public class RBMTest {
 
     @Test
-    public void testTrainRBM() {
+    public void testTrainRBM() throws Exception {
 
         RBM rbm = new RBM(9, 3, false, new Random(1));
 
-        ArrayList<RealVector> trainingData = new ArrayList<RealVector>();
+        final ArrayList<RealVector> trainingData = new ArrayList<RealVector>();
         trainingData.add(new ArrayRealVector(new double[]{
                 0, 0, 0,
                 0, 0, 0,
@@ -32,8 +34,16 @@ public class RBMTest {
                 0, 0, 0,
                 0, 0, 0}));
 
-        RBMTrainer trainer = new RBMTrainer(rbm);
-        //trainer.train(trainingData, 10000);
+        MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
+            @Override
+            public Collection<RealVector> createMiniBatch() {
+                Collections.shuffle(trainingData);
+                return trainingData;
+            }
+        };
+
+        RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
+        trainer.train();
 
         RealVector hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
                 0, 1, 1,

@@ -1,22 +1,33 @@
 package org.devsmart.match.rbm;
 
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class RBMTrainer {
 
     private final RBM rbm;
-    public int numGibbsSteps = 1;
-    public double learningRate = 0.1;
+    private final MiniBatchCreator mMinibatchCreator;
 
-    public RBMTrainer(RBM rbm) {
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
+    public int numEpic = 1000;
+    public int numGibbsSteps = 1;
+    public double learningRate = 0.2;
+
+    public RBMTrainer(RBM rbm, MiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
+        this.mMinibatchCreator = miniBatchCreator;
     }
 
 
@@ -55,14 +66,49 @@ public class RBMTrainer {
     }
 
 
-    /*
-    public void train(Collection<RealVector> trainingData, int numEpic) {
-        setInitialValues(rbm, trainingData.iterator());
+
+    public void train() throws Exception {
+        setInitialValues(rbm, mMinibatchCreator.createMiniBatch().iterator());
         for(int i=0;i<numEpic;i++){
-            for(RealVector trainingVisible : trainingData){
-                ContrastiveDivergence.train(rbm, trainingVisible, numGibbsSteps, learningRate);
+            final Collection<RealVector> minibatch = mMinibatchCreator.createMiniBatch();
+            ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());
+            for(RealVector trainingVisible : minibatch){
+                tasks.add(mExecutorService.submit(new TrainingTask(trainingVisible)));
             }
+
+            RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
+            RealVector a = new ArrayRealVector(rbm.a.getDimension());
+            RealVector b = new ArrayRealVector(rbm.b.getDimension());
+            final double multiplier = learningRate / minibatch.size();
+            for(Future<ContrastiveDivergence> task : tasks) {
+                ContrastiveDivergence result = task.get();
+                W = W.add(result.WGradient.scalarMultiply(multiplier));
+                a = a.add(result.AGradient.mapMultiplyToSelf(multiplier));
+                b = b.add(result.BGradient.mapMultiplyToSelf(multiplier));
+            }
+
+
+            rbm.W = rbm.W.add(W);
+            rbm.a = rbm.a.add(a);
+            rbm.b = rbm.b.add(b);
+
+
         }
     }
-    */
+
+    class TrainingTask implements Callable<ContrastiveDivergence> {
+
+        private final ContrastiveDivergence retval = new ContrastiveDivergence();
+        private final RealVector input;
+
+        TrainingTask(RealVector input) {
+            this.input = input;
+        }
+
+        @Override
+        public ContrastiveDivergence call() throws Exception {
+            retval.train(rbm, input, numGibbsSteps);
+            return retval;
+        }
+    }
 }

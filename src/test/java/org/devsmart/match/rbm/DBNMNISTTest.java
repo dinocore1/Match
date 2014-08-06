@@ -28,7 +28,7 @@ public class DBNMNISTTest {
         for(int i=0;i<imageFile.numImages;i++){
             images.add(i);
         }
-        DBNTrainer trainer = new DBNTrainer(dbn, new DBNTrainer.Callback() {
+        DBNTrainer trainer = new DBNTrainer(dbn, new MiniBatchCreator() {
 
             Random r = new Random(1);
             final int batchSize = 30;
