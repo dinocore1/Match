@@ -58,7 +58,7 @@ public class DBNTrainer {
                 rbm.b = rbm.b.add(b.mapMultiplyToSelf(multiplier));
 
                 //compute error using one of the minibatch examples
-                RealVector input = miniBatch.iterator().next();
+                RealVector input = dbn.propagateUp(miniBatch.iterator().next(), layer);
                 SummaryStatistics errorStat = new SummaryStatistics();
                 RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(input));
                 for(int j=0;j<reconstruct.getDimension();j++){
