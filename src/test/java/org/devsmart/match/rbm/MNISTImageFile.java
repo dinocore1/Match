@@ -45,6 +45,19 @@ public class MNISTImageFile {
         return retval;
     }
 
+    public BufferedImage createImage(double[] data) {
+        BufferedImage retval = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        int i=0;
+        for(int r=0;r< height;r++){
+            for(int c=0;c< width;c++){
+                int color = 0xff & (int)(255 * data[i++]);
+                //retval.setRGB(c, r, new Color(color,color,color).getRGB());
+                retval.setRGB(c, r, (0xff << 24) | ((0xff & color) << 16) | ((0xff & color) << 8) | (color & 0xff));
+            }
+        }
+        return retval;
+    }
+
     public BufferedImage getBufferedImage(int index) throws IOException {
         long offset = index* width * height +16;
         mRandomAccessFile.seek(offset);

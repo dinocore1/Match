@@ -5,6 +5,8 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.junit.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -48,6 +50,23 @@ public class DBNMNISTTest {
         });
 
         trainer.train();
+
+        {
+            RealVector visible = new ArrayRealVector(imageFile.getImage(images.get(0)));
+            {
+                BufferedImage image = imageFile.createImage(visible.toArray());
+                File outputFile = new File("test.png");
+                ImageIO.write(image, "png", outputFile);
+            }
+
+            {
+                RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(visible, dbn.rbms.size()), dbn.rbms.size());
+                BufferedImage image = imageFile.createImage(reconstruct.toArray());
+                File outputFile = new File("testr.png");
+                ImageIO.write(image, "png", outputFile);
+            }
+
+        }
 
 
 
