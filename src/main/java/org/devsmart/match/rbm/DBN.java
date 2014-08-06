@@ -25,4 +25,12 @@ public class DBN {
         return input;
     }
 
+    public RealVector propagateDown(RealVector input, int start, int numLayers) {
+        for(int layer=start;layer>=0;layer--){
+            RBM rbm = rbms.get(layer);
+            input = rbm.activateVisible(input);
+        }
+        return input;
+    }
+
 }

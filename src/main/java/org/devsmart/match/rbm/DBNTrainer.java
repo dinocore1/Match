@@ -2,6 +2,7 @@ package org.devsmart.match.rbm;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
@@ -19,11 +20,11 @@ public class DBNTrainer {
         Collection<RealVector> createMiniBatch();
     }
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
     private final Callback mCallback;
     private final DBN dbn;
     int numGibbsSteps = 1;
-    double learningRate = 0.5;
+    double learningRate = 0.01;
     int numEpocsPerLayer = 1000;
 
     public DBNTrainer(DBN dbn, Callback callback){
@@ -42,30 +43,33 @@ public class DBNTrainer {
                 for(RealVector input : mCallback.createMiniBatch()) {
                     tasks.add(mExecutorService.submit(new TrainingTask(input, layer)));
                 }
-                Array2DRowRealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
-                ArrayRealVector a = new ArrayRealVector(rbm.a.getDimension());
-                ArrayRealVector b = new ArrayRealVector(rbm.b.getDimension());
+                RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
+                RealVector a = new ArrayRealVector(rbm.a.getDimension());
+                RealVector b = new ArrayRealVector(rbm.b.getDimension());
                 for(Future<ContrastiveDivergence> task : tasks) {
                     ContrastiveDivergence result = task.get();
-                    W.add(result.WGradient);
-                    a.add(result.AGradient);
-                    b.add(result.BGradient);
+                    W = W.add(result.WGradient);
+                    a = a.add(result.AGradient);
+                    b = b.add(result.BGradient);
                 }
 
                 final double multiplier = learningRate/miniBatch.size();
+                //final double multiplier = 1.0;
                 rbm.W = rbm.W.add(W.scalarMultiply(multiplier));
                 rbm.a = rbm.a.add(a.mapMultiplyToSelf(multiplier));
                 rbm.b = rbm.b.add(b.mapMultiplyToSelf(multiplier));
 
-                //compute error using one of the minibatch examples
-                RealVector input = dbn.propagateUp(miniBatch.iterator().next(), layer);
-                SummaryStatistics errorStat = new SummaryStatistics();
-                RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(input));
-                for(int j=0;j<reconstruct.getDimension();j++){
-                    errorStat.addValue(input.getEntry(j)-reconstruct.getEntry(j));
+                {
+                    //compute error using one of the minibatch examples
+                    SummaryStatistics errorStat = new SummaryStatistics();
+                    RealVector trainingVisible = miniBatch.iterator().next();
+                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(trainingVisible, layer+1), layer, layer);
+                    for (int j = 0; j < reconstruct.getDimension(); j++) {
+                        errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
+                    }
+                    final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
+                    System.out.println(String.format("layer: %d epoc: %d error: %.5g", layer, i, error));
                 }
-                final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
-                System.out.println(String.format("layer: %d epoc: %d error: %.5g", layer, i, error));
             }
         }
     }
