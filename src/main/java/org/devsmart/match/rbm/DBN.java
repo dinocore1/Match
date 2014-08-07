@@ -20,7 +20,7 @@ public class DBN {
     public RealVector propagateDown(RealVector input, int numLayers) {
         for(int layer=rbms.size()-1;layer>=0;layer--){
             RBM rbm = rbms.get(layer);
-            input = rbm.activateVisible(input);
+            input = rbm.activateVisibleq(input);
         }
         return input;
     }

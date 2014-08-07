@@ -58,11 +58,29 @@ public class RBM {
         for(int i=0;i<numVisible;i++){
             double sum = W.getRowVector(i).dotProduct(hidden);
             sum += a.getEntry(i);
-            if(isGaussianVisible) {
-                visible.setEntry(i, sum);
-            } else {
-                visible.setEntry(i, sigmoid.value(sum));
-            }
+            double prob = sigmoid.value(sum);
+            visible.setEntry(i, r.nextDouble() < prob ? 1.0 : 0.0);
+            //if(isGaussianVisible) {
+            //    visible.setEntry(i, sum);
+            //} else {
+            //    visible.setEntry(i, sigmoid.value(sum));
+            //}
+        }
+        return visible;
+    }
+
+    public RealVector activateVisibleq(RealVector hidden) {
+        RealVector visible = new ArrayRealVector(numVisible);
+        for(int i=0;i<numVisible;i++){
+            double sum = W.getRowVector(i).dotProduct(hidden);
+            sum += a.getEntry(i);
+            double prob = sigmoid.value(sum);
+            visible.setEntry(i, prob);
+            //if(isGaussianVisible) {
+            //    visible.setEntry(i, sum);
+            //} else {
+            //    visible.setEntry(i, sigmoid.value(sum));
+            //}
         }
         return visible;
     }
