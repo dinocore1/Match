@@ -9,6 +9,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +23,7 @@ public class DBNTrainer {
     int numGibbsSteps = 1;
     double learningRate = 0.5;
     int numEpocsPerLayer = 1000;
+    public Random random = new Random();
 
     public DBNTrainer(DBN dbn, MiniBatchCreator callback){
         this.dbn = dbn;
@@ -31,7 +33,7 @@ public class DBNTrainer {
     public void train() throws Exception {
         for(int layer=0;layer<dbn.rbms.size();layer++){
             RBM rbm = dbn.rbms.get(layer);
-            RBMTrainer.setInitialValues(rbm, mMinibachCreator.createMiniBatch().iterator());
+            RBMTrainer.setInitialValues(rbm, mMinibachCreator.createMiniBatch().iterator(), random);
             for(int i=0;i<numEpocsPerLayer;i++){
 
                 Collection<RealVector> miniBatch = mMinibachCreator.createMiniBatch();
@@ -61,7 +63,7 @@ public class DBNTrainer {
                     //compute error using one of the minibatch examples
                     SummaryStatistics errorStat = new SummaryStatistics();
                     RealVector trainingVisible = miniBatch.iterator().next();
-                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(trainingVisible, layer+1), layer, layer);
+                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(trainingVisible, layer+1, random), layer, random);
                     for (int j = 0; j < reconstruct.getDimension(); j++) {
                         errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
                     }
@@ -85,7 +87,7 @@ public class DBNTrainer {
 
         @Override
         public ContrastiveDivergence call() throws Exception {
-            retval.train(dbn.rbms.get(layer), dbn.propagateUp(input, layer), numGibbsSteps);
+            retval.train(dbn.rbms.get(layer), dbn.propagateUp(input, layer, random), numGibbsSteps, random);
             return retval;
         }
     }

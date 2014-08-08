@@ -4,34 +4,29 @@ package org.devsmart.match.rbm;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-public class ContrastiveDivergence {
+import java.util.Random;
 
-    public static RealVector gibbsSample(RBM rbm, RealVector input, int numSteps) {
-        for(int k=0;k<numSteps;k++) {
-            RealVector hidden = rbm.activateHidden(input);
-            input = rbm.activateVisible(hidden);
-        }
-        return input;
-    }
+public class ContrastiveDivergence {
 
     public RealMatrix WGradient;
     public RealVector AGradient;
     public RealVector BGradient;
 
-    public void train(RBM rbm, RealVector trainingVisible, int numGibbsSteps) {
-        RealVector negitive = gibbsSample(rbm, trainingVisible, numGibbsSteps);
+    public void train(RBM rbm, RealVector trainingVisible, int numGibbsSteps, Random r) {
 
-        RealVector hiddenPositive = rbm.activateHidden(trainingVisible);
-        RealVector hiddenNegitive = rbm.activateHidden(negitive);
+        RealVector hiddenPositive = rbm.activateHidden(trainingVisible, r);
+        RealVector input = rbm.activateVisible(hiddenPositive, r);
+        for(int i=1;i<numGibbsSteps;i++){
+            input = rbm.activateHidden(input, r);
+            input = rbm.activateVisible(input, r);
+        }
+        RealVector negitive = input;
+        RealVector hiddenNegitive = rbm.activateHidden(negitive, r);
 
         WGradient = trainingVisible.outerProduct(hiddenPositive).subtract(negitive.outerProduct(hiddenNegitive));
         AGradient = trainingVisible.subtract(negitive);
         BGradient = hiddenPositive.subtract(hiddenNegitive);
 
-        //rbm.W = rbm.W.add(gradient.scalarMultiply(learningRate));
-
-        //rbm.a = rbm.a.add(trainingVisible.subtract(negitive).mapMultiplyToSelf(learningRate));
-        //rbm.b = rbm.b.add(hiddenPositive.subtract(hiddenNegitive).mapMultiplyToSelf(learningRate));
     }
 
 

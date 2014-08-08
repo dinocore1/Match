@@ -1,6 +1,7 @@
 package org.devsmart.match.rbm;
 
 
+import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -16,9 +17,9 @@ public class DBNBuilderTest {
         DBN dbn = builder.build();
         assertNotNull(dbn);
         assertEquals(1, dbn.rbms.size());
-        assertEquals(9, dbn.rbms.get(0).numVisible);
-        assertEquals(3, dbn.rbms.get(0).numHidden);
-        assertEquals(false, dbn.rbms.get(0).isGaussianVisible);
+        assertEquals(9, dbn.rbms.get(0).visible.length);
+        assertEquals(3, dbn.rbms.get(0).hidden.length);
+        assertTrue(dbn.rbms.get(0).visible[0] instanceof BernoulliNuron);
     }
 
     @Test
@@ -31,11 +32,11 @@ public class DBNBuilderTest {
 
         DBN dbn = builder.build();
         assertEquals(3, dbn.rbms.size());
-        assertEquals(8000, dbn.rbms.get(0).numVisible);
-        assertEquals(500, dbn.rbms.get(0).numHidden);
-        assertEquals(500, dbn.rbms.get(1).numVisible);
-        assertEquals(300, dbn.rbms.get(1).numHidden);
-        assertEquals(300, dbn.rbms.get(2).numVisible);
-        assertEquals(2000, dbn.rbms.get(2).numHidden);
+        assertEquals(8000, dbn.rbms.get(0).visible.length);
+        assertEquals(500, dbn.rbms.get(0).hidden.length);
+        assertEquals(500, dbn.rbms.get(1).visible.length);
+        assertEquals(300, dbn.rbms.get(1).hidden.length);
+        assertEquals(300, dbn.rbms.get(2).visible.length);
+        assertEquals(2000, dbn.rbms.get(2).hidden.length);
     }
 }

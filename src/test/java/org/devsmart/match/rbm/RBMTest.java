@@ -5,6 +5,8 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.devsmart.match.rbm.RBM;
 import org.devsmart.match.rbm.RBMTrainer;
+import org.devsmart.match.rbm.nuron.BernoulliNuron;
+import org.devsmart.match.rbm.nuron.Nuron;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -15,10 +17,19 @@ import java.util.Random;
 
 public class RBMTest {
 
+    private Nuron[] createBernoliiLayer(int size) {
+        Nuron[] retval = new Nuron[size];
+        for(int i=0;i<retval.length;i++){
+            retval[i] = new BernoulliNuron();
+        }
+        return retval;
+    }
+
     @Test
     public void testTrainRBM() throws Exception {
+        Random r = new Random(1);
 
-        RBM rbm = new RBM(9, 3, false, new Random(1));
+        RBM rbm = new RBM(createBernoliiLayer(9), createBernoliiLayer(3));
 
         final ArrayList<RealVector> trainingData = new ArrayList<RealVector>();
         trainingData.add(new ArrayRealVector(new double[]{
@@ -45,11 +56,11 @@ public class RBMTest {
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
         trainer.train();
 
-        RealVector hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        RealVector hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 0, 1, 1,
                 0, 0, 0,
                 0, 0, 0}));
-        RealVector visible = rbm.activateVisible(hidden);
+        RealVector visible = rbm.getVisibleInput(hidden);
         assertEquals(1, visible.getEntry(0), 0.1);
         assertEquals(1, visible.getEntry(1), 0.1);
         assertEquals(1, visible.getEntry(2), 0.1);
@@ -60,11 +71,11 @@ public class RBMTest {
         assertEquals(0, visible.getEntry(7), 0.1);
         assertEquals(0, visible.getEntry(8), 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 0, 0, 0,
                 0, 1, 0,
                 1, 0, 0}));
-        visible = rbm.activateVisible(hidden);
+        visible = rbm.getVisibleInput(hidden);
         assertEquals(0, visible.getEntry(0), 0.1);
         assertEquals(0, visible.getEntry(1), 0.1);
         assertEquals(1, visible.getEntry(2), 0.1);
@@ -75,11 +86,11 @@ public class RBMTest {
         assertEquals(0, visible.getEntry(7), 0.1);
         assertEquals(0, visible.getEntry(8), 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 0, 0, 0,
                 0, 0, 0,
                 1, 0, 1}));
-        visible = rbm.activateVisible(hidden);
+        visible = rbm.getVisibleInput(hidden);
         assertEquals(0, visible.getEntry(0), 0.1);
         assertEquals(0, visible.getEntry(1), 0.1);
         assertEquals(0, visible.getEntry(2), 0.1);
@@ -90,11 +101,11 @@ public class RBMTest {
         assertEquals(1, visible.getEntry(7), 0.1);
         assertEquals(1, visible.getEntry(8), 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 0, 0, 1,
                 0, 0, 0,
                 1, 0, 0}));
-        visible = rbm.activateVisible(hidden);
+        visible = rbm.getVisibleInput(hidden);
         assertEquals(0, visible.getEntry(0), 0.1);
         assertEquals(0, visible.getEntry(1), 0.1);
         assertEquals(1, visible.getEntry(2), 0.1);
@@ -105,11 +116,11 @@ public class RBMTest {
         assertEquals(0, visible.getEntry(7), 0.1);
         assertEquals(0, visible.getEntry(8), 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 1, 0, 0,
                 0, 0, 0,
                 1, 0, 1}));
-        visible = rbm.activateVisible(hidden);
+        visible = rbm.getVisibleInput(hidden);
         assertEquals(0, visible.getEntry(0), 0.1);
         assertEquals(0, visible.getEntry(1), 0.1);
         assertEquals(0, visible.getEntry(2), 0.1);
@@ -120,11 +131,11 @@ public class RBMTest {
         assertEquals(1, visible.getEntry(7), 0.1);
         assertEquals(1, visible.getEntry(8), 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.getHiddenInput(new ArrayRealVector(new double[]{
                 1, 1, 0,
                 0, 0, 0,
                 1, 1, 1}));
-        visible = rbm.activateVisible(hidden);
+        visible = rbm.getVisibleInput(hidden);
         assertEquals(0, visible.getEntry(0), 0.1);
         assertEquals(0, visible.getEntry(1), 0.1);
         assertEquals(0, visible.getEntry(2), 0.1);
