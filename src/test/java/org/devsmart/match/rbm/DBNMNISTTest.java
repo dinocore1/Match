@@ -19,23 +19,25 @@ public class DBNMNISTTest {
     public void testTrainMNISTDBN() throws Exception {
         final MNISTImageFile imageFile = new MNISTImageFile(new File("build/data/train-images-idx3-ubyte"));
 
-        DBN dbn = new DBNBuilder().addLayer(imageFile.width*imageFile.height, true)
-                .addLayer(30, false)
+        DBN dbn = new DBNBuilder()
+                .addLayer(imageFile.width*imageFile.height, false)
+                .addLayer(25, false)
                 //.addLayer(500, false)
                 //.addLayer(2000, false)
                 .withRandom(r)
                 .build();
 
+        RBM rbm = dbn.rbms.get(0);
+
         //final int numSamples = imageFile.numImages;
-        final int numSamples = 51;
+        final int numSamples = 50;
         final ArrayList<Integer> images = new ArrayList<Integer>(numSamples);
         for(int i=0;i<numSamples;i++){
             images.add(i);
         }
-        DBNTrainer trainer = new DBNTrainer(dbn, new MiniBatchCreator() {
+        final MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
 
-            Random r = new Random(1);
-            final int batchSize = 10;
+            final int batchSize = 1;
 
             @Override
             public Collection<RealVector> createMiniBatch() {
@@ -51,8 +53,9 @@ public class DBNMNISTTest {
                     return null;
                 }
             }
-        });
+        };
 
+        RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
         trainer.train();
 
         {
@@ -65,7 +68,8 @@ public class DBNMNISTTest {
                 }
 
                 {
-                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(visible, dbn.rbms.size(), r), dbn.rbms.size(), r);
+                    //RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(visible, dbn.rbms.size(), r), dbn.rbms.size(), r);
+                    RealVector reconstruct = dbn.rbms.get(0).getVisibleInput(dbn.rbms.get(0).activateHidden(visible, r));
                     BufferedImage image = imageFile.createImage(reconstruct.toArray());
                     File outputFile = new File(String.format("testr%d.png", i));
                     ImageIO.write(image, "png", outputFile);
@@ -76,7 +80,8 @@ public class DBNMNISTTest {
                 RealVector hidden = new ArrayRealVector(dbn.rbms.get(0).hidden.length);
                 hidden.setEntry(i%dbn.rbms.get(0).hidden.length, 1);
 
-                RealVector reconstruct = dbn.propagateDown(hidden, dbn.rbms.size(), r);
+                //RealVector reconstruct = dbn.propagateDown(hidden, dbn.rbms.size(), r);
+                RealVector reconstruct = dbn.rbms.get(0).getVisibleInput(hidden);
                 BufferedImage image = imageFile.createImage(reconstruct.toArray());
                 File outputFile = new File(String.format("n%d.png", i));
                 ImageIO.write(image, "png", outputFile);

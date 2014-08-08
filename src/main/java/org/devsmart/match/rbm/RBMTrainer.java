@@ -25,10 +25,10 @@ public class RBMTrainer {
     private final MiniBatchCreator mMinibatchCreator;
     public Random random = new Random();
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
-    public int numEpic = 1000;
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
+    public int numEpic = 10000;
     public int numGibbsSteps = 1;
-    public double learningRate = 0.2;
+    public double learningRate = 0.1;
 
     public RBMTrainer(RBM rbm, MiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
@@ -60,6 +60,7 @@ public class RBMTrainer {
 
         }
 
+        /*
         for(int i=0;i<rbm.visible.length;i++){
             if(rbm.visible[i] instanceof GaussianNuron){
                 double sigma = trainStats[i].getStandardDeviation();
@@ -74,6 +75,7 @@ public class RBMTrainer {
                 rbm.a.setEntry(i, FastMath.log(mean / (1-mean)));
             }
         }
+        */
 
     }
 
@@ -104,6 +106,17 @@ public class RBMTrainer {
             rbm.a = rbm.a.add(a);
             rbm.b = rbm.b.add(b);
 
+            {
+                //compute error using one of the minibatch examples
+                SummaryStatistics errorStat = new SummaryStatistics();
+                RealVector trainingVisible = minibatch.iterator().next();
+                RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(trainingVisible, random), random);
+                for (int j = 0; j < reconstruct.getDimension(); j++) {
+                    errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
+                }
+                final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
+                System.out.println(String.format("epoc: %d error: %.5g", i, error));
+            }
 
         }
     }

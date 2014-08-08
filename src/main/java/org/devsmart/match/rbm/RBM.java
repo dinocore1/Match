@@ -38,7 +38,8 @@ public class RBM {
         for(int j=0;j<hidden.length;j++){
             double sum = W.getColumnVector(j).dotProduct(visible);
             sum += b.getEntry(j);
-            retval.setEntry(j, sum);
+            double prob = hidden[j].activate(sum);
+            retval.setEntry(j, prob);
         }
         return retval;
     }
@@ -48,7 +49,8 @@ public class RBM {
         for(int i=0;i<visible.length;i++){
             double sum = W.getRowVector(i).dotProduct(hidden);
             sum += a.getEntry(i);
-            retval.setEntry(i, sum);
+            double prob = visible[i].activate(sum);
+            retval.setEntry(i, prob);
         }
         return retval;
     }

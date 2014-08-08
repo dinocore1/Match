@@ -17,12 +17,12 @@ import java.util.concurrent.Future;
 
 public class DBNTrainer {
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
     private final MiniBatchCreator mMinibachCreator;
     private final DBN dbn;
     int numGibbsSteps = 1;
-    double learningRate = 0.5;
-    int numEpocsPerLayer = 1000;
+    double learningRate = 0.1;
+    int numEpocsPerLayer = 4000;
     public Random random = new Random();
 
     public DBNTrainer(DBN dbn, MiniBatchCreator callback){
@@ -45,7 +45,7 @@ public class DBNTrainer {
                 RealVector a = new ArrayRealVector(rbm.a.getDimension());
                 RealVector b = new ArrayRealVector(rbm.b.getDimension());
                 //double lr = learningRate / (1 + 0.1*i);
-                double lr = learningRate;
+                double lr = 1.0 / miniBatch.size();
                 for(Future<ContrastiveDivergence> task : tasks) {
                     ContrastiveDivergence result = task.get();
                     W = W.add(result.WGradient.scalarMultiply(lr));
@@ -53,11 +53,9 @@ public class DBNTrainer {
                     b = b.add(result.BGradient.mapMultiplyToSelf(lr));
                 }
 
-                final double multiplier = 1.0/miniBatch.size();
-                //final double multiplier = 1.0;
-                rbm.W = rbm.W.add(W.scalarMultiply(multiplier));
-                rbm.a = rbm.a.add(a.mapMultiplyToSelf(multiplier));
-                rbm.b = rbm.b.add(b.mapMultiplyToSelf(multiplier));
+                rbm.W = rbm.W.add(W);
+                rbm.a = rbm.a.add(a);
+                rbm.b = rbm.b.add(b);
 
                 {
                     //compute error using one of the minibatch examples
