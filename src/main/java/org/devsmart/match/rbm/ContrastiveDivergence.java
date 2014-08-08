@@ -15,13 +15,15 @@ public class ContrastiveDivergence {
     public void train(RBM rbm, RealVector trainingVisible, int numGibbsSteps, Random r) {
 
         RealVector hiddenPositive = rbm.activateHidden(trainingVisible, r);
-        RealVector input = rbm.activateVisible(hiddenPositive, r);
+
+        RealVector input = hiddenPositive;
         for(int i=1;i<numGibbsSteps;i++){
-            input = rbm.activateHidden(input, r);
             input = rbm.activateVisible(input, r);
+            input = rbm.activateHidden(input, r);
         }
-        RealVector negitive = input;
-        RealVector hiddenNegitive = rbm.activateHidden(negitive, r);
+        RealVector negitive = rbm.getVisibleInput(input);
+
+        RealVector hiddenNegitive = rbm.activateHidden(rbm.activateVisible(input, r), r);
 
         WGradient = trainingVisible.outerProduct(hiddenPositive).subtract(negitive.outerProduct(hiddenNegitive));
         AGradient = trainingVisible.subtract(negitive);

@@ -20,9 +20,9 @@ public class DBNTrainer {
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
     private final MiniBatchCreator mMinibachCreator;
     private final DBN dbn;
-    int numGibbsSteps = 1;
-    double learningRate = 0.1;
-    int numEpocsPerLayer = 4000;
+    public int numGibbsSteps = 1;
+    public double learningRate = 0.1;
+    public int numEpocsPerLayer = 4000;
     public Random random = new Random();
 
     public DBNTrainer(DBN dbn, MiniBatchCreator callback){
@@ -44,8 +44,7 @@ public class DBNTrainer {
                 RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
                 RealVector a = new ArrayRealVector(rbm.a.getDimension());
                 RealVector b = new ArrayRealVector(rbm.b.getDimension());
-                //double lr = learningRate / (1 + 0.1*i);
-                double lr = 1.0 / miniBatch.size();
+                double lr = learningRate / miniBatch.size();
                 for(Future<ContrastiveDivergence> task : tasks) {
                     ContrastiveDivergence result = task.get();
                     W = W.add(result.WGradient.scalarMultiply(lr));

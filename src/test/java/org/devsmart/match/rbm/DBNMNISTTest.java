@@ -27,8 +27,6 @@ public class DBNMNISTTest {
                 .withRandom(r)
                 .build();
 
-        RBM rbm = dbn.rbms.get(0);
-
         //final int numSamples = imageFile.numImages;
         final int numSamples = 50;
         final ArrayList<Integer> images = new ArrayList<Integer>(numSamples);
@@ -37,7 +35,7 @@ public class DBNMNISTTest {
         }
         final MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
 
-            final int batchSize = 1;
+            final int batchSize = 10;
 
             @Override
             public Collection<RealVector> createMiniBatch() {
@@ -55,7 +53,10 @@ public class DBNMNISTTest {
             }
         };
 
-        RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
+        DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
+        trainer.random = r;
+        trainer.learningRate = 0.5;
+        trainer.numEpocsPerLayer = 3000;
         trainer.train();
 
         {

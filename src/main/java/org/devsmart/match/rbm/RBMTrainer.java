@@ -26,7 +26,7 @@ public class RBMTrainer {
     public Random random = new Random();
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
-    public int numEpic = 10000;
+    public int numEpic = 1000;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
 
