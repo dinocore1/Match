@@ -1,14 +1,15 @@
 package org.devsmart.match.rbm;
 
 
+import com.google.common.base.Stopwatch;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
-import org.devsmart.match.rbm.nuron.BernoulliNuron;
-import org.devsmart.match.rbm.nuron.GaussianNuron;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class RBMTrainer {
+
+    private static Logger logger = LoggerFactory.getLogger(RBMTrainer.class);
 
     private final RBM rbm;
     private final MiniBatchCreator mMinibatchCreator;
@@ -33,6 +36,10 @@ public class RBMTrainer {
     public RBMTrainer(RBM rbm, MiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
         this.mMinibatchCreator = miniBatchCreator;
+    }
+
+    public void setNumTrainingThreads(int numThreads) {
+        mExecutorService = Executors.newFixedThreadPool(numThreads);
     }
 
 
@@ -82,6 +89,7 @@ public class RBMTrainer {
 
 
     public void train() throws Exception {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         setInitialValues(rbm, mMinibatchCreator.createMiniBatch().iterator(), random);
         for(int i=0;i<numEpic;i++){
             final Collection<RealVector> minibatch = mMinibatchCreator.createMiniBatch();
@@ -106,7 +114,7 @@ public class RBMTrainer {
             rbm.a = rbm.a.add(a);
             rbm.b = rbm.b.add(b);
 
-            {
+            if(i % 100 == 0) {
                 //compute error using one of the minibatch examples
                 SummaryStatistics errorStat = new SummaryStatistics();
                 RealVector trainingVisible = minibatch.iterator().next();
@@ -115,10 +123,13 @@ public class RBMTrainer {
                     errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
                 }
                 final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
-                System.out.println(String.format("epoc: %d error: %.5g", i, error));
+                logger.info("epoc: {} error: {}", i, error);
             }
 
         }
+        stopwatch.stop();
+        logger.info("Training took {}", stopwatch);
+
     }
 
     class TrainingTask implements Callable<ContrastiveDivergence> {
