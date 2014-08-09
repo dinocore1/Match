@@ -3,6 +3,7 @@ package org.devsmart.match.rbm;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
 import org.junit.Test;

@@ -1,13 +1,14 @@
 package org.devsmart.match.rbm;
 
 
+import org.devsmart.match.data.MNISTImageFile;
+import org.devsmart.match.data.MNISTLabelFile;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 public class MNISTDBTest {
 
@@ -20,9 +21,19 @@ public class MNISTDBTest {
         assertEquals(0.9882352941176471, data[210], 0.0001);
 
 
-        BufferedImage image = imageFile.getBufferedImage(5);
+        BufferedImage image = imageFile.getBufferedImage(9);
         File outputFile = new File("test.png");
         ImageIO.write(image, "png", outputFile);
 
+    }
+
+    @Test
+    public void testReadMNISTLabelFile() throws Exception {
+        MNISTLabelFile labelFile = new MNISTLabelFile(new File("build/data/train-labels-idx1-ubyte"));
+
+        assertEquals(60000, labelFile.numImages);
+        assertEquals(2, labelFile.getLabel(5));
+        assertEquals(1, labelFile.getLabel(3));
+        assertEquals(4, labelFile.getLabel(9));
     }
 }

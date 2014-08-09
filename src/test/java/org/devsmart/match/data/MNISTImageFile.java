@@ -1,4 +1,4 @@
-package org.devsmart.match.rbm;
+package org.devsmart.match.data;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
