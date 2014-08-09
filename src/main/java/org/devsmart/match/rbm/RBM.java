@@ -32,57 +32,58 @@ public class RBM {
         this.b = new ArrayRealVector(hidden.length);
     }
 
-    public RealVector getHiddenInput(RealVector visible) {
-        RealVector retval = new ArrayRealVector(hidden.length);
+    public double[] getHiddenInput(double[] visible) {
+        double[] retval = new double[hidden.length];
         for(int j=0;j<hidden.length;j++){
-            double sum = W.getColumnVector(j).dotProduct(visible);
+            double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
             sum += b.getEntry(j);
             double prob = hidden[j].activate(sum);
-            retval.setEntry(j, prob);
+            retval[j] = prob;
         }
         return retval;
     }
 
-    public RealVector getVisibleInput(RealVector hidden) {
-        RealVector retval = new ArrayRealVector(visible.length);
+    public double[] getVisibleInput(double[] hidden) {
+        double[] retval = new double[visible.length];
         for(int i=0;i<visible.length;i++){
-            double sum = W.getRowVector(i).dotProduct(hidden);
+            double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
             sum += a.getEntry(i);
             double prob = visible[i].activate(sum);
-            retval.setEntry(i, prob);
+            retval[i] = prob;
         }
         return retval;
     }
 
-    public RealVector activateHidden(RealVector visible, Random r) {
-        RealVector retval = new ArrayRealVector(hidden.length);
+    public double[] activateHidden(double[] visible, Random r) {
+        double[] retval = new double[hidden.length];
         for(int j=0;j<hidden.length;j++){
-            double sum = W.getColumnVector(j).dotProduct(visible);
+            double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
             sum += b.getEntry(j);
             double prob = hidden[j].activate(sum);
-            retval.setEntry(j, r.nextDouble() < prob ? 1.0 : 0.0);
+            retval[j] = r.nextDouble() < prob ? 1.0 : 0.0;
         }
         return retval;
     }
 
-    public RealVector activateVisible(RealVector hidden, Random r) {
-        RealVector retval = new ArrayRealVector(visible.length);
+    public double[] activateVisible(double[] hidden, Random r) {
+        double[] retval = new double[visible.length];
         for(int i=0;i<visible.length;i++){
-            double sum = W.getRowVector(i).dotProduct(hidden);
+            double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
             sum += a.getEntry(i);
             double prob = visible[i].activate(sum);
-            retval.setEntry(i, r.nextDouble() < prob ? 1.0 : 0.0);
+            retval[i] = r.nextDouble() < prob ? 1.0 : 0.0;
         }
         return retval;
     }
 
-    public double freeEnergy(RealVector visible) {
+    public double freeEnergy(double[] visible) {
+        ArrayRealVector visibleVector = new ArrayRealVector(visible);
         double sum = 0;
         for(int j=0;j<hidden.length;j++){
-            sum += FastMath.log(1 + FastMath.exp(b.getEntry(j) + W.getColumnVector(j).dotProduct(visible)));
+            sum += FastMath.log(1 + FastMath.exp(b.getEntry(j) + W.getColumnVector(j).dotProduct(visibleVector)));
         }
 
-        return -visible.dotProduct(a) - sum;
+        return -visibleVector.dotProduct(a) - sum;
     }
 
 }

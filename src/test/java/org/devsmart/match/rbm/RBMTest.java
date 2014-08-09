@@ -57,95 +57,95 @@ public class RBMTest {
         trainer.numEpic = 2000;
         trainer.train();
 
-        RealVector hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        double[] hidden = rbm.activateHidden(new double[]{
                 0, 1, 1,
                 0, 0, 0,
-                0, 0, 0}), r);
-        RealVector visible = rbm.getVisibleInput(hidden);
-        assertEquals(1, visible.getEntry(0), 0.1);
-        assertEquals(1, visible.getEntry(1), 0.1);
-        assertEquals(1, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(0, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(0, visible.getEntry(6), 0.1);
-        assertEquals(0, visible.getEntry(7), 0.1);
-        assertEquals(0, visible.getEntry(8), 0.1);
+                0, 0, 0}, r);
+        double[] visible = rbm.getVisibleInput(hidden);
+        assertEquals(1, visible[0], 0.1);
+        assertEquals(1, visible[1], 0.1);
+        assertEquals(1, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(0, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(0, visible[6], 0.1);
+        assertEquals(0, visible[7], 0.1);
+        assertEquals(0, visible[8], 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.activateHidden(new double[]{
                 0, 0, 0,
                 0, 1, 0,
-                1, 0, 0}), r);
+                1, 0, 0}, r);
         visible = rbm.getVisibleInput(hidden);
-        assertEquals(0, visible.getEntry(0), 0.1);
-        assertEquals(0, visible.getEntry(1), 0.1);
-        assertEquals(1, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(1, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(1, visible.getEntry(6), 0.1);
-        assertEquals(0, visible.getEntry(7), 0.1);
-        assertEquals(0, visible.getEntry(8), 0.1);
+        assertEquals(0, visible[0], 0.1);
+        assertEquals(0, visible[1], 0.1);
+        assertEquals(1, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(1, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(1, visible[6], 0.1);
+        assertEquals(0, visible[7], 0.1);
+        assertEquals(0, visible[8], 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.activateHidden(new double[]{
                 0, 0, 0,
                 0, 0, 0,
-                1, 0, 1}), r);
+                1, 0, 1}, r);
         visible = rbm.getVisibleInput(hidden);
-        assertEquals(0, visible.getEntry(0), 0.1);
-        assertEquals(0, visible.getEntry(1), 0.1);
-        assertEquals(0, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(0, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(1, visible.getEntry(6), 0.1);
-        assertEquals(1, visible.getEntry(7), 0.1);
-        assertEquals(1, visible.getEntry(8), 0.1);
+        assertEquals(0, visible[0], 0.1);
+        assertEquals(0, visible[1], 0.1);
+        assertEquals(0, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(0, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(1, visible[6], 0.1);
+        assertEquals(1, visible[7], 0.1);
+        assertEquals(1, visible[8], 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.activateHidden(new double[]{
                 0, 0, 1,
                 0, 0, 0,
-                1, 0, 0}),r );
+                1, 0, 0},r );
         visible = rbm.getVisibleInput(hidden);
-        assertEquals(0, visible.getEntry(0), 0.1);
-        assertEquals(0, visible.getEntry(1), 0.1);
-        assertEquals(1, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(1, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(1, visible.getEntry(6), 0.1);
-        assertEquals(0, visible.getEntry(7), 0.1);
-        assertEquals(0, visible.getEntry(8), 0.1);
+        assertEquals(0, visible[0], 0.1);
+        assertEquals(0, visible[1], 0.1);
+        assertEquals(1, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(1, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(1, visible[6], 0.1);
+        assertEquals(0, visible[7], 0.1);
+        assertEquals(0, visible[8], 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.activateHidden(new double[]{
                 1, 0, 0,
                 0, 1, 0,
-                1, 1, 1}), r);
+                1, 1, 1}, r);
         visible = rbm.getVisibleInput(hidden);
-        assertEquals(0, visible.getEntry(0), 0.1);
-        assertEquals(0, visible.getEntry(1), 0.1);
-        assertEquals(0, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(0, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(1, visible.getEntry(6), 0.1);
-        assertEquals(1, visible.getEntry(7), 0.1);
-        assertEquals(1, visible.getEntry(8), 0.1);
+        assertEquals(0, visible[0], 0.1);
+        assertEquals(0, visible[1], 0.1);
+        assertEquals(0, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(0, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(1, visible[6], 0.1);
+        assertEquals(1, visible[7], 0.1);
+        assertEquals(1, visible[8], 0.1);
 
-        hidden = rbm.activateHidden(new ArrayRealVector(new double[]{
+        hidden = rbm.activateHidden(new double[]{
                 0, 1, 0,
                 0, 0, 0,
-                1, 1, 1}), r);
+                1, 1, 1}, r);
         visible = rbm.getVisibleInput(hidden);
-        assertEquals(0, visible.getEntry(0), 0.1);
-        assertEquals(0, visible.getEntry(1), 0.1);
-        assertEquals(0, visible.getEntry(2), 0.1);
-        assertEquals(0, visible.getEntry(3), 0.1);
-        assertEquals(0, visible.getEntry(4), 0.1);
-        assertEquals(0, visible.getEntry(5), 0.1);
-        assertEquals(1, visible.getEntry(6), 0.1);
-        assertEquals(1, visible.getEntry(7), 0.1);
-        assertEquals(1, visible.getEntry(8), 0.1);
+        assertEquals(0, visible[0], 0.1);
+        assertEquals(0, visible[1], 0.1);
+        assertEquals(0, visible[2], 0.1);
+        assertEquals(0, visible[3], 0.1);
+        assertEquals(0, visible[4], 0.1);
+        assertEquals(0, visible[5], 0.1);
+        assertEquals(1, visible[6], 0.1);
+        assertEquals(1, visible[7], 0.1);
+        assertEquals(1, visible[8], 0.1);
 
     }
 }

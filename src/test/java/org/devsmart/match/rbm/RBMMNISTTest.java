@@ -71,27 +71,27 @@ public class RBMMNISTTest {
 
         {
             for(int i=0;i<5;i++) {
-                RealVector visible = new ArrayRealVector(imageFile.getImage(images.get(i)));
+                double[] visible = imageFile.getImage(images.get(i));
                 {
-                    BufferedImage image = imageFile.createImage(visible.toArray());
+                    BufferedImage image = imageFile.createImage(visible);
                     File outputFile = new File(String.format("test%d.png", i));
                     ImageIO.write(image, "png", outputFile);
                 }
 
                 {
-                    RealVector reconstruct = rbm.getVisibleInput(rbm.activateHidden(visible, r));
-                    BufferedImage image = imageFile.createImage(reconstruct.toArray());
+                    double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(visible, r));
+                    BufferedImage image = imageFile.createImage(reconstruct);
                     File outputFile = new File(String.format("testr%d.png", i));
                     ImageIO.write(image, "png", outputFile);
                 }
             }
 
             for(int i=0;i<5;i++){
-                RealVector hidden = new ArrayRealVector(rbm.hidden.length);
-                hidden.setEntry(i%rbm.hidden.length, 1);
+                double[] hidden = new double[rbm.hidden.length];
+                hidden[i%rbm.hidden.length] = 1;
 
-                RealVector reconstruct = rbm.getVisibleInput(hidden);
-                BufferedImage image = imageFile.createImage(reconstruct.toArray());
+                double[] reconstruct = rbm.getVisibleInput(hidden);
+                BufferedImage image = imageFile.createImage(reconstruct);
                 File outputFile = new File(String.format("n%d.png", i));
                 ImageIO.write(image, "png", outputFile);
             }

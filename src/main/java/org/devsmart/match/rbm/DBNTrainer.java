@@ -6,6 +6,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class DBNTrainer {
+
+    private static Logger logger = LoggerFactory.getLogger(DBNTrainer.class);
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
     private final DBNMiniBatchCreator mMinibachCreator;
@@ -30,23 +34,28 @@ public class DBNTrainer {
         this.mMinibachCreator = callback;
     }
 
-    public double[] propagateUp(int finalLayer, double[][] input) {
-        for(int i=0;i<finalLayer;i++){
+    private void setInitialValuesForLayer(int layer) {
+        Collection<double[][][]> minibatch = mMinibachCreator.createMinibatch();
 
-
+        Collection<double[]> rbmMinibatch = new ArrayList<double[]>(minibatch.size());
+        for(double[][][] input : minibatch) {
+            double[] visible = dbn.propagateUp(layer, input, random);
+            rbmMinibatch.add(dbn.getVisibleForLayer(layer, input, visible));
         }
+
+        RBMTrainer.setInitialValues(dbn.mRBMs.get(layer), rbmMinibatch, random);
     }
 
     public void train() throws Exception {
         for(int layer=0;layer<dbn.mRBMs.size();layer++){
             RBM rbm = dbn.mRBMs.get(layer);
-            RBMTrainer.setInitialValues(rbm, mMinibachCreator.createMiniBatch().iterator(), random);
+            setInitialValuesForLayer(layer);
             for(int i=0;i<numEpocsPerLayer;i++){
 
-                Collection<double[]> miniBatch = mMinibachCreator.createMiniBatch();
+                Collection<double[][][]> miniBatch = mMinibachCreator.createMinibatch();
                 ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(miniBatch.size());
-                for(double[] input : mMinibachCreator.createMiniBatch()) {
-                    tasks.add(mExecutorService.submit(new TrainingTask(new ArrayRealVector(input), layer)));
+                for(double[][][] input : miniBatch) {
+                    tasks.add(mExecutorService.submit(new TrainingTask(input, layer)));
                 }
                 RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
                 RealVector a = new ArrayRealVector(rbm.a.getDimension());
@@ -63,16 +72,21 @@ public class DBNTrainer {
                 rbm.a = rbm.a.add(a);
                 rbm.b = rbm.b.add(b);
 
-                {
+
+                if(i % 100 == 0) {
                     //compute error using one of the minibatch examples
                     SummaryStatistics errorStat = new SummaryStatistics();
-                    double[] trainingVisible = miniBatch.iterator().next();
-                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(new ArrayRealVector(trainingVisible), layer+1, random), layer, random);
-                    for (int j = 0; j < reconstruct.getDimension(); j++) {
-                        errorStat.addValue(trainingVisible[j] - reconstruct.getEntry(j));
+                    double[][][] input = miniBatch.iterator().next();
+
+                    double[] layerInput = dbn.propagateUp(layer, input, random);
+                    layerInput = dbn.getVisibleForLayer(layer, input, layerInput);
+
+                    double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(layerInput, random));
+                    for (int j = 0; j < reconstruct.length; j++) {
+                        errorStat.addValue(layerInput[j] - reconstruct[j]);
                     }
                     final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
-                    System.out.println(String.format("layer: %d epoc: %d error: %.5g", layer, i, error));
+                    logger.info("layer: {} epoc: {} error: {}", layer, i, error);
                 }
             }
         }
@@ -81,17 +95,19 @@ public class DBNTrainer {
     private class TrainingTask implements Callable<ContrastiveDivergence> {
 
         private final ContrastiveDivergence retval = new ContrastiveDivergence();
-        private final RealVector input;
+        private final double[][][] input;
         private final int layer;
 
-        public TrainingTask(RealVector input, int layer){
+        public TrainingTask(double[][][] input, int layer){
             this.input = input;
             this.layer = layer;
         }
 
         @Override
         public ContrastiveDivergence call() throws Exception {
-            retval.train(dbn.rbms.get(layer), dbn.propagateUp(input, layer, random), numGibbsSteps, random);
+            double[] layerInput = dbn.propagateUp(layer, input, random);
+            layerInput = dbn.getVisibleForLayer(layer, input, layerInput);
+            retval.train(dbn.mRBMs.get(layer), layerInput, numGibbsSteps, random);
             return retval;
         }
     }

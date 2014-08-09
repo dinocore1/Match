@@ -116,9 +116,9 @@ public class RBMTrainer {
                 //compute error using one of the minibatch examples
                 SummaryStatistics errorStat = new SummaryStatistics();
                 double[] trainingVisible = minibatch.iterator().next();
-                RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(new ArrayRealVector(trainingVisible), random), random);
-                for (int j = 0; j < reconstruct.getDimension(); j++) {
-                    errorStat.addValue(trainingVisible[j] - reconstruct.getEntry(j));
+                double[] reconstruct = rbm.activateVisible(rbm.activateHidden(trainingVisible, random), random);
+                for (int j = 0; j < reconstruct.length; j++) {
+                    errorStat.addValue(trainingVisible[j] - reconstruct[j]);
                 }
                 final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
                 logger.info("epoc: {} error: {}", i, error);
@@ -133,10 +133,10 @@ public class RBMTrainer {
     class TrainingTask implements Callable<ContrastiveDivergence> {
 
         private final ContrastiveDivergence retval = new ContrastiveDivergence();
-        private final RealVector input;
+        private final double[] input;
 
         TrainingTask(double[] input) {
-            this.input = new ArrayRealVector(input);
+            this.input = input;
         }
 
         @Override
