@@ -41,17 +41,17 @@ public class RBMMNISTTest {
         for(int i=0;i<numSamples;i++){
             images.add(i);
         }
-        final MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
+        final RBMMiniBatchCreator miniBatchCreator = new RBMMiniBatchCreator() {
 
             final int batchSize = 10;
 
             @Override
-            public Collection<RealVector> createMiniBatch() {
+            public Collection<double[]> createMiniBatch() {
                 try {
                     Collections.shuffle(images, r);
-                    ArrayList<RealVector> retval = new ArrayList<RealVector>(batchSize);
+                    ArrayList<double[]> retval = new ArrayList<double[]>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
-                        retval.add(new ArrayRealVector(imageFile.getImage(images.get(i))));
+                        retval.add(imageFile.getImage(images.get(i)));
                     }
                     return retval;
                 } catch (IOException e) {

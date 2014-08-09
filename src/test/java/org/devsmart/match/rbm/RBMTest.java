@@ -3,8 +3,6 @@ package org.devsmart.match.rbm;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.devsmart.match.rbm.RBM;
-import org.devsmart.match.rbm.RBMTrainer;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
 import org.junit.Test;
@@ -31,23 +29,23 @@ public class RBMTest {
 
         RBM rbm = new RBM(createBernoliiLayer(9), createBernoliiLayer(3));
 
-        final ArrayList<RealVector> trainingData = new ArrayList<RealVector>();
-        trainingData.add(new ArrayRealVector(new double[]{
+        final ArrayList<double[]> trainingData = new ArrayList<double[]>();
+        trainingData.add(new double[]{
                 0, 0, 0,
                 0, 0, 0,
-                1, 1, 1}));
-        trainingData.add(new ArrayRealVector(new double[]{
+                1, 1, 1});
+        trainingData.add(new double[]{
                 0, 0, 1,
                 0, 1, 0,
-                1, 0, 0}));
-        trainingData.add(new ArrayRealVector(new double[]{
+                1, 0, 0});
+        trainingData.add(new double[]{
                 1, 1, 1,
                 0, 0, 0,
-                0, 0, 0}));
+                0, 0, 0});
 
-        MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
+        RBMMiniBatchCreator miniBatchCreator = new RBMMiniBatchCreator() {
             @Override
-            public Collection<RealVector> createMiniBatch() {
+            public Collection<double[]> createMiniBatch() {
                 Collections.shuffle(trainingData);
                 return trainingData;
             }

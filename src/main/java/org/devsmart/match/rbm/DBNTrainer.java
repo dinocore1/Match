@@ -18,28 +18,35 @@ import java.util.concurrent.Future;
 public class DBNTrainer {
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
-    private final MiniBatchCreator mMinibachCreator;
+    private final DBNMiniBatchCreator mMinibachCreator;
     private final DBN dbn;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
     public int numEpocsPerLayer = 4000;
     public Random random = new Random();
 
-    public DBNTrainer(DBN dbn, MiniBatchCreator callback){
+    public DBNTrainer(DBN dbn, DBNMiniBatchCreator callback){
         this.dbn = dbn;
         this.mMinibachCreator = callback;
     }
 
+    public double[] propagateUp(int finalLayer, double[][] input) {
+        for(int i=0;i<finalLayer;i++){
+
+
+        }
+    }
+
     public void train() throws Exception {
-        for(int layer=0;layer<dbn.rbms.size();layer++){
-            RBM rbm = dbn.rbms.get(layer);
+        for(int layer=0;layer<dbn.mRBMs.size();layer++){
+            RBM rbm = dbn.mRBMs.get(layer);
             RBMTrainer.setInitialValues(rbm, mMinibachCreator.createMiniBatch().iterator(), random);
             for(int i=0;i<numEpocsPerLayer;i++){
 
-                Collection<RealVector> miniBatch = mMinibachCreator.createMiniBatch();
+                Collection<double[]> miniBatch = mMinibachCreator.createMiniBatch();
                 ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(miniBatch.size());
-                for(RealVector input : mMinibachCreator.createMiniBatch()) {
-                    tasks.add(mExecutorService.submit(new TrainingTask(input, layer)));
+                for(double[] input : mMinibachCreator.createMiniBatch()) {
+                    tasks.add(mExecutorService.submit(new TrainingTask(new ArrayRealVector(input), layer)));
                 }
                 RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
                 RealVector a = new ArrayRealVector(rbm.a.getDimension());
@@ -59,10 +66,10 @@ public class DBNTrainer {
                 {
                     //compute error using one of the minibatch examples
                     SummaryStatistics errorStat = new SummaryStatistics();
-                    RealVector trainingVisible = miniBatch.iterator().next();
-                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(trainingVisible, layer+1, random), layer, random);
+                    double[] trainingVisible = miniBatch.iterator().next();
+                    RealVector reconstruct = dbn.propagateDown(dbn.propagateUp(new ArrayRealVector(trainingVisible), layer+1, random), layer, random);
                     for (int j = 0; j < reconstruct.getDimension(); j++) {
-                        errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
+                        errorStat.addValue(trainingVisible[j] - reconstruct.getEntry(j));
                     }
                     final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
                     System.out.println(String.format("layer: %d epoc: %d error: %.5g", layer, i, error));

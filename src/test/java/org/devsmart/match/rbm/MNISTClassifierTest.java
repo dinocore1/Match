@@ -18,6 +18,17 @@ public class MNISTClassifierTest {
         final MNISTLabelFile labelFile = new MNISTLabelFile(new File("build/data/train-labels-idx1-ubyte"));
 
 
+        DBNBuilder builder = new DBNBuilder();
+        builder.addBernouliiLayer(imageFile.height*imageFile.width);
+        builder.addBernouliiLayer(25);
+        builder.addBernouliiLayer(25, 10);
+        builder.addBernouliiLayer(2000);
+
+        DBN dbn = builder.build();
+
+
+
+
 
 
     }

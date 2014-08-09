@@ -25,7 +25,7 @@ public class RBMTrainer {
     private static Logger logger = LoggerFactory.getLogger(RBMTrainer.class);
 
     private final RBM rbm;
-    private final MiniBatchCreator mMinibatchCreator;
+    private final RBMMiniBatchCreator mMinibatchCreator;
     public Random random = new Random();
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
@@ -33,7 +33,7 @@ public class RBMTrainer {
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
 
-    public RBMTrainer(RBM rbm, MiniBatchCreator miniBatchCreator) {
+    public RBMTrainer(RBM rbm, RBMMiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
         this.mMinibatchCreator = miniBatchCreator;
     }
@@ -43,7 +43,7 @@ public class RBMTrainer {
     }
 
 
-    public static void setInitialValues(RBM rbm, Iterator<RealVector> miniBatch, Random r) {
+    public static void setInitialValues(RBM rbm, Collection<double[]> miniBatch, Random r) {
 
         //init weights zero-mean Gaussian with stddev of 0.01
         for(int i=0;i<rbm.visible.length;i++){
@@ -59,12 +59,10 @@ public class RBMTrainer {
             trainStats[i] = new SummaryStatistics();
         }
 
-        while(miniBatch.hasNext()){
-            RealVector training = miniBatch.next();
+        for(double[] training : miniBatch){
             for(int i=0;i<rbm.visible.length;i++){
-                trainStats[i].addValue(training.getEntry(i));
+                trainStats[i].addValue(training[i]);
             }
-
         }
 
         /*
@@ -90,11 +88,11 @@ public class RBMTrainer {
 
     public void train() throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        setInitialValues(rbm, mMinibatchCreator.createMiniBatch().iterator(), random);
+        setInitialValues(rbm, mMinibatchCreator.createMiniBatch(), random);
         for(int i=0;i<numEpic;i++){
-            final Collection<RealVector> minibatch = mMinibatchCreator.createMiniBatch();
+            final Collection<double[]> minibatch = mMinibatchCreator.createMiniBatch();
             ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());
-            for(RealVector trainingVisible : minibatch){
+            for(double[] trainingVisible : minibatch){
                 tasks.add(mExecutorService.submit(new TrainingTask(trainingVisible)));
             }
 
@@ -117,10 +115,10 @@ public class RBMTrainer {
             if(i % 100 == 0) {
                 //compute error using one of the minibatch examples
                 SummaryStatistics errorStat = new SummaryStatistics();
-                RealVector trainingVisible = minibatch.iterator().next();
-                RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(trainingVisible, random), random);
+                double[] trainingVisible = minibatch.iterator().next();
+                RealVector reconstruct = rbm.activateVisible(rbm.activateHidden(new ArrayRealVector(trainingVisible), random), random);
                 for (int j = 0; j < reconstruct.getDimension(); j++) {
-                    errorStat.addValue(trainingVisible.getEntry(j) - reconstruct.getEntry(j));
+                    errorStat.addValue(trainingVisible[j] - reconstruct.getEntry(j));
                 }
                 final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
                 logger.info("epoc: {} error: {}", i, error);
@@ -137,8 +135,8 @@ public class RBMTrainer {
         private final ContrastiveDivergence retval = new ContrastiveDivergence();
         private final RealVector input;
 
-        TrainingTask(RealVector input) {
-            this.input = input;
+        TrainingTask(double[] input) {
+            this.input = new ArrayRealVector(input);
         }
 
         @Override
