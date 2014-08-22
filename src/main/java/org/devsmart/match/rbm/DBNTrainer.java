@@ -21,7 +21,7 @@ public class DBNTrainer {
 
     private static Logger logger = LoggerFactory.getLogger(DBNTrainer.class);
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
+    public ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
     private final DBNMiniBatchCreator mMinibachCreator;
     private final DBN dbn;
     public int numGibbsSteps = 1;
@@ -60,7 +60,7 @@ public class DBNTrainer {
                 RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
                 RealVector a = new ArrayRealVector(rbm.a.getDimension());
                 RealVector b = new ArrayRealVector(rbm.b.getDimension());
-                double lr = learningRate / miniBatch.size();
+                double lr = 1.0 / miniBatch.size();
                 for(Future<ContrastiveDivergence> task : tasks) {
                     ContrastiveDivergence result = task.get();
                     W = W.add(result.WGradient.scalarMultiply(lr));
@@ -68,9 +68,9 @@ public class DBNTrainer {
                     b = b.add(result.BGradient.mapMultiplyToSelf(lr));
                 }
 
-                rbm.W = rbm.W.add(W);
-                rbm.a = rbm.a.add(a);
-                rbm.b = rbm.b.add(b);
+                rbm.W = rbm.W.add(W.scalarMultiply(learningRate));
+                rbm.a = rbm.a.add(a.mapMultiplyToSelf(learningRate));
+                rbm.b = rbm.b.add(b.mapMultiplyToSelf(learningRate));
 
 
                 if(i % 100 == 0) {
@@ -81,7 +81,7 @@ public class DBNTrainer {
                     double[] layerInput = dbn.propagateUp(layer, input, random);
                     layerInput = dbn.getVisibleForLayer(layer, input, layerInput);
 
-                    double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(layerInput, random));
+                    double[] reconstruct = rbm.activateVisible(rbm.activateHidden(layerInput, random), random);
                     for (int j = 0; j < reconstruct.length; j++) {
                         errorStat.addValue(layerInput[j] - reconstruct[j]);
                     }

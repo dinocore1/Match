@@ -8,6 +8,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
+import org.devsmart.match.rbm.nuron.BernoulliNuron;
+import org.devsmart.match.rbm.nuron.GaussianNuron;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,6 @@ public class RBMTrainer {
             }
         }
 
-        /*
         for(int i=0;i<rbm.visible.length;i++){
             if(rbm.visible[i] instanceof GaussianNuron){
                 double sigma = trainStats[i].getStandardDeviation();
@@ -74,13 +75,11 @@ public class RBMTrainer {
                 rbm.a.setEntry(i, trainStats[i].getMean());
             } else if(rbm.visible[i] instanceof BernoulliNuron){
                 double mean = trainStats[i].getMean();
-                if(mean == 0){
-                    mean = Double.MIN_VALUE;
-                }
+                mean = Math.max(0.1, mean);
+                mean = Math.min(0.9, mean);
                 rbm.a.setEntry(i, FastMath.log(mean / (1-mean)));
             }
         }
-        */
 
     }
 

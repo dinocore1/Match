@@ -62,7 +62,7 @@ public class DBN {
         for(int i=0;i<finalLayer;i++){
             RBM rbm = mRBMs.get(i);
             visible = getVisibleForLayer(i, input, visible);
-            visible = rbm.activateHidden(visible, r);
+            visible = rbm.getHiddenInput(visible);
         }
 
         return visible;

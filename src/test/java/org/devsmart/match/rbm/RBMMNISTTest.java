@@ -33,10 +33,11 @@ public class RBMMNISTTest {
     public void trainMNIST() throws Exception {
         final MNISTImageFile imageFile = new MNISTImageFile(new File("build/data/train-images-idx3-ubyte"));
 
-        RBM rbm = new RBM(createBernoliiLayer(imageFile.height*imageFile.width), createBernoliiLayer(25));
+        RBM rbm = new RBM(createBernoliiLayer(imageFile.height*imageFile.width), createBernoliiLayer(100));
 
 
-        final int numSamples = 50;
+        //final int numSamples = 50;
+        final int numSamples = imageFile.numImages;
         final ArrayList<Integer> images = new ArrayList<Integer>(numSamples);
         for(int i=0;i<numSamples;i++){
             images.add(i);

@@ -17,14 +17,14 @@ public class ContrastiveDivergence {
 
         double[] hiddenPositive = rbm.activateHidden(trainingVisible, r);
 
-        double[] input = hiddenPositive;
-        for(int i=1;i<numGibbsSteps;i++){
-            input = rbm.activateVisible(input, r);
+        double[] input = trainingVisible;
+        for(int i=0;i<numGibbsSteps;i++){
             input = rbm.activateHidden(input, r);
+            input = rbm.activateVisible(input, r);
         }
-        double[] negitive = rbm.getVisibleInput(input);
 
-        double[] hiddenNegitive = rbm.activateHidden(rbm.activateVisible(input, r), r);
+        double[] negitive = input;
+        double[] hiddenNegitive = rbm.getHiddenInput(negitive);
 
         final ArrayRealVector trainingVisibleV = new ArrayRealVector(trainingVisible);
         final ArrayRealVector hiddenPositiveV = new ArrayRealVector(hiddenPositive);

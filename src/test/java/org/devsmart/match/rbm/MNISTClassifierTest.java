@@ -22,8 +22,8 @@ public class MNISTClassifierTest {
 
         DBNBuilder builder = new DBNBuilder();
         builder.addBernouliiLayer(imageFile.height*imageFile.width);
-        builder.addBernouliiLayer(500);
-        builder.addBernouliiLayer(500, 10);
+        builder.addBernouliiLayer(100);
+        builder.addBernouliiLayer(100, 10);
         builder.addBernouliiLayer(2000);
 
         final DBN dbn = builder.build();
@@ -46,8 +46,8 @@ public class MNISTClassifierTest {
                     for (int i = 0; i < batchSize; i++) {
                         double[][][] input = new double[dbn.mLayers.size()][2][];
                         input[0][0] = imageFile.getImage(images.get(i));
-                        input[1][1] = new double[10];
-                        input[1][1][labelFile.getLabel(images.get(i))] = 1;
+                        input[2][1] = new double[10];
+                        input[2][1][labelFile.getLabel(images.get(i))] = 1;
                         retval.add(input);
                     }
                     return retval;
@@ -60,13 +60,14 @@ public class MNISTClassifierTest {
 
 
         DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
-        trainer.numEpocsPerLayer = 1000;
+        trainer.numEpocsPerLayer = 2000;
+        trainer.learningRate = 0.2;
+        trainer.numGibbsSteps = 3;
         trainer.train();
 
         int numCorrect = 0;
-        final int total = imageFile.numImages;
-        final int start = 0;
-        for(int i=start;i<start+total;i++){
+        int total = 0;
+        for(int i=0;i<500;i++){
             final int knownDigit = labelFile.getLabel(i);
             double[] bottomVisible = imageFile.getImage(i);
             System.out.println(String.format("MNIST# %d Digit %d:", i, knownDigit));
@@ -76,12 +77,14 @@ public class MNISTClassifierTest {
             for(int digit=0;digit<10;digit++) {
                 double[][][] input = new double[dbn.mLayers.size()][2][];
                 input[0][0] = bottomVisible;
-                input[1][1] = new double[10];
-                input[1][1][digit] = 1;
+                input[2][1] = new double[10];
+                input[2][1][digit] = 1;
 
-                double[] visible = dbn.propagateUp(1, input, r);
-                visible = dbn.getVisibleForLayer(1, input, visible);
-                double freeEnergy = dbn.mRBMs.get(1).freeEnergy(visible);
+                double[] visible = dbn.propagateUp(2, input, r);
+                visible = dbn.getVisibleForLayer(2, input, visible);
+                //visible = dbn.mRBMs.get(2).getVisibleInput(visible);
+
+                double freeEnergy = dbn.mRBMs.get(2).freeEnergy(visible);
 
                 System.out.println(String.format("digit: %d free energy: %.5g", digit, freeEnergy));
 
@@ -96,9 +99,10 @@ public class MNISTClassifierTest {
             if(isCorrect){
                 numCorrect++;
             }
+            total++;
         }
 
-        System.out.println(String.format("Accuracy: %d/%d %.5g", numCorrect, total, 100 * ((double)numCorrect / total)));
+        System.out.println(String.format("Accuracy: %d/%d %.5g%%", numCorrect, total, 100 * ((double)numCorrect / total)));
 
     }
 }
