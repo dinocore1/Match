@@ -3,6 +3,7 @@ package org.devsmart.match.rbm;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.devsmart.match.LossFunction;
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
@@ -44,7 +45,7 @@ public class RBMMNISTTest {
         }
         final RBMMiniBatchCreator miniBatchCreator = new RBMMiniBatchCreator() {
 
-            final int batchSize = 10;
+            final int batchSize = 100;
 
             @Override
             public Collection<double[]> createMiniBatch() {
@@ -52,7 +53,11 @@ public class RBMMNISTTest {
                     Collections.shuffle(images, r);
                     ArrayList<double[]> retval = new ArrayList<double[]>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
-                        retval.add(imageFile.getImage(images.get(i)));
+                        double[] rawPixData = imageFile.getImage(images.get(i));
+                        for(int q=0;q<rawPixData.length;q++){
+                            rawPixData[q] = rawPixData[q] > 0.3 ? 1.0 : 0.0;
+                        }
+                        retval.add(rawPixData);
                     }
                     return retval;
                 } catch (IOException e) {
@@ -63,11 +68,9 @@ public class RBMMNISTTest {
         };
 
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
-        trainer.setNumTrainingThreads(4);
-        trainer.numEpic = 8000;
         trainer.learningRate = 0.1;
-
-        trainer.train();
+        trainer.lossFunction = LossFunction.CrossEntropy;
+        trainer.train(0.5, 10000);
 
 
         {

@@ -52,9 +52,7 @@ public class RBMTest {
 
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
         trainer.random = r;
-        //trainer.setNumTrainingThreads(4);
-        trainer.numEpic = 2000;
-        trainer.train();
+        trainer.train(1e-5, 5000);
 
         double[] hidden = rbm.activateHidden(new double[]{
                 0, 1, 1,

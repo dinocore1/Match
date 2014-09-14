@@ -6,8 +6,10 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
+import org.devsmart.match.LossFunction;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.GaussianNuron;
 import org.slf4j.Logger;
@@ -30,10 +32,12 @@ public class RBMTrainer {
     private final RBMMiniBatchCreator mMinibatchCreator;
     public Random random = new Random();
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(1);
-    public int numEpic = 1000;
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    public LossFunction lossFunction = LossFunction.SumOfSquares;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
+    public double momentum = 0.1;
+    public double weightDecay = 0;
 
     public RBMTrainer(RBM rbm, RBMMiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
@@ -84,11 +88,16 @@ public class RBMTrainer {
     }
 
 
-
-    public void train() throws Exception {
+    public void train(double sigmaErrorDiff, int errorWindow, Double minError, long maxEpoc) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         setInitialValues(rbm, mMinibatchCreator.createMiniBatch(), random);
-        for(int i=0;i<numEpic;i++){
+
+        RealMatrix lastW = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
+        RealVector lastA = new ArrayRealVector(rbm.a.getDimension());
+        RealVector lastB = new ArrayRealVector(rbm.b.getDimension());
+        DescriptiveStatistics errorStats = new DescriptiveStatistics(errorWindow);
+
+        for(int i=0;i<maxEpoc;i++){
             final Collection<double[]> minibatch = mMinibatchCreator.createMiniBatch();
             ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());
             for(double[] trainingVisible : minibatch){
@@ -98,7 +107,7 @@ public class RBMTrainer {
             RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
             RealVector a = new ArrayRealVector(rbm.a.getDimension());
             RealVector b = new ArrayRealVector(rbm.b.getDimension());
-            final double multiplier = learningRate / minibatch.size();
+            final double multiplier = 1.0 / minibatch.size();
             for(Future<ContrastiveDivergence> task : tasks) {
                 ContrastiveDivergence result = task.get();
                 W = W.add(result.WGradient.scalarMultiply(multiplier));
@@ -107,26 +116,42 @@ public class RBMTrainer {
             }
 
 
-            rbm.W = rbm.W.add(W);
-            rbm.a = rbm.a.add(a);
-            rbm.b = rbm.b.add(b);
+            rbm.W = rbm.W.add( W.add(lastW.scalarMultiply(momentum).subtract(rbm.W.scalarMultiply(weightDecay))).scalarMultiply(learningRate) );
+            rbm.a = rbm.a.add( a.add(lastA.mapMultiply(momentum).subtract(rbm.a.mapMultiply(weightDecay))).mapMultiply(learningRate) );
+            rbm.b = rbm.b.add( b.add(lastB.mapMultiply(momentum).subtract(rbm.b.mapMultiply(weightDecay))).mapMultiply(learningRate) );
 
-            if(i % 100 == 0) {
-                //compute error using one of the minibatch examples
-                SummaryStatistics errorStat = new SummaryStatistics();
-                double[] trainingVisible = minibatch.iterator().next();
-                double[] reconstruct = rbm.activateVisible(rbm.activateHidden(trainingVisible, random), random);
-                for (int j = 0; j < reconstruct.length; j++) {
-                    errorStat.addValue(trainingVisible[j] - reconstruct[j]);
-                }
-                final double error = FastMath.sqrt(errorStat.getSumsq() / errorStat.getN());
-                logger.info("epoc: {} error: {}", i, error);
+            lastW = W;
+            lastA = a;
+            lastB = b;
+
+            final double error = error(minibatch);
+            if(i % 1 == 0){
+                logger.info("epoc: {} error: {}", i , error);
             }
+
+            errorStats.addValue(error);
+            final double meanError = errorStats.getMean();
+            final double stddivError = errorStats.getStandardDeviation();
+            logger.info("avg error: {} 3*sigma: {}",errorStats.getMean(), 3*stddivError);
+            if(minError != null && meanError < minError){
+                logger.info("converged on epoc: {}. mean error: {}", i, meanError);
+                break;
+            }
+
+            if(3*stddivError <= sigmaErrorDiff && errorStats.getN() > 3) {
+                //converged
+                logger.info("converged on epoc: {}. mean error: {}", i, meanError);
+                break;
+            }
+
 
         }
         stopwatch.stop();
         logger.info("Training took {}", stopwatch);
+    }
 
+    public void train(double sigmaErrorDiff, long maxEpoc) throws Exception {
+        train(sigmaErrorDiff, 10, null, maxEpoc);
     }
 
     class TrainingTask implements Callable<ContrastiveDivergence> {
@@ -143,5 +168,14 @@ public class RBMTrainer {
             retval.train(rbm, input, numGibbsSteps, random);
             return retval;
         }
+    }
+
+    public double error(final Collection<double[]> minibatch) {
+        SummaryStatistics errorStats = new SummaryStatistics();
+        for(double[] data : minibatch){
+            double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(data, random));
+            errorStats.addValue(lossFunction.loss(data, reconstruct));
+        }
+        return errorStats.getMean();
     }
 }

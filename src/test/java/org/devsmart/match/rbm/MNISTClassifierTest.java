@@ -36,7 +36,7 @@ public class MNISTClassifierTest {
         }
         DBNMiniBatchCreator miniBatchCreator = new DBNMiniBatchCreator() {
 
-            final int batchSize = 10;
+            final int batchSize = 100;
 
             @Override
             public Collection<double[][][]> createMinibatch() {
@@ -45,7 +45,13 @@ public class MNISTClassifierTest {
                     ArrayList<double[][][]> retval = new ArrayList<double[][][]>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
                         double[][][] input = new double[dbn.mLayers.size()][2][];
-                        input[0][0] = imageFile.getImage(images.get(i));
+
+                        double[] rawPixData = imageFile.getImage(images.get(i));
+                        for(int q=0;q<rawPixData.length;q++){
+                            rawPixData[q] = rawPixData[q] > 0.3 ? 1.0 : 0.0;
+                        }
+
+                        input[0][0] = rawPixData;
                         input[2][1] = new double[10];
                         input[2][1][labelFile.getLabel(images.get(i))] = 1;
                         retval.add(input);
