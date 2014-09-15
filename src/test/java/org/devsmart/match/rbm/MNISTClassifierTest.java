@@ -1,6 +1,7 @@
 package org.devsmart.match.rbm;
 
 
+import org.devsmart.match.LossFunction;
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.data.MNISTLabelFile;
 import org.junit.Test;
@@ -66,6 +67,7 @@ public class MNISTClassifierTest {
 
 
         DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
+        //trainer.lossFunction = LossFunction.CrossEntropy;
         trainer.learningRate = 0.5;
         trainer.numGibbsSteps = 1;
         trainer.train(0.5, 5000);

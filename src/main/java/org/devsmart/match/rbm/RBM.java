@@ -37,8 +37,7 @@ public class RBM {
         for(int j=0;j<hidden.length;j++){
             double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
             sum += b.getEntry(j);
-            double prob = hidden[j].activate(sum);
-            retval[j] = prob;
+            retval[j] = sum;
         }
         return retval;
     }
@@ -48,13 +47,22 @@ public class RBM {
         for(int i=0;i<visible.length;i++){
             double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
             sum += a.getEntry(i);
-            double prob = visible[i].activate(sum);
-            retval[i] = prob;
+            retval[i] = sum;
         }
         return retval;
     }
 
-    public double[] activateHidden(double[] visible, Random r) {
+    public double[] activateHidden(double[] visible) {
+        double[] retval = new double[hidden.length];
+        for(int j=0;j<hidden.length;j++){
+            double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
+            sum += b.getEntry(j);
+            retval[j] = hidden[j].activate(sum);
+        }
+        return retval;
+    }
+
+    public double[] sampleHidden(double[] visible, Random r) {
         double[] retval = new double[hidden.length];
         for(int j=0;j<hidden.length;j++){
             double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
@@ -65,7 +73,17 @@ public class RBM {
         return retval;
     }
 
-    public double[] activateVisible(double[] hidden, Random r) {
+    public double[] activateVisible(double[] hidden) {
+        double[] retval = new double[visible.length];
+        for(int i=0;i<visible.length;i++){
+            double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
+            sum += a.getEntry(i);
+            retval[i] = visible[i].activate(sum);
+        }
+        return retval;
+    }
+
+    public double[] sampleVisible(double[] hidden, Random r) {
         double[] retval = new double[visible.length];
         for(int i=0;i<visible.length;i++){
             double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));

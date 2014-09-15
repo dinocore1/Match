@@ -1,5 +1,6 @@
 package org.devsmart.match.rbm;
 
+import org.devsmart.match.LossFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class DBNTrainer {
     private final DBN dbn;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
+    public LossFunction lossFunction = LossFunction.SumOfSquares;
     public Random random = new Random();
 
     public DBNTrainer(DBN dbn, DBNMiniBatchCreator callback){
@@ -45,6 +47,7 @@ public class DBNTrainer {
             });
             trainer.numGibbsSteps = numGibbsSteps;
             trainer.learningRate = learningRate;
+            trainer.lossFunction = lossFunction;
             trainer.train(sigmaErrorDiff, maxEpoc);
         }
     }

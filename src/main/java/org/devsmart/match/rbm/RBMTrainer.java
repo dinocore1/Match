@@ -88,7 +88,7 @@ public class RBMTrainer {
     }
 
 
-    public void train(double sigmaErrorDiff, int errorWindow, Double minError, long maxEpoc) throws Exception {
+    public void train(Double sigmaErrorDiff, int errorWindow, Double maxError, long maxEpoc) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         setInitialValues(rbm, mMinibatchCreator.createMiniBatch(), random);
 
@@ -131,7 +131,7 @@ public class RBMTrainer {
             if(i % 10 == 0){
                 logger.info("epoc: {} avg error: {} 3*stddiv error: {}", i, meanError, 3*stddivError);
             }
-            if(minError != null && meanError < minError){
+            if(maxError != null && meanError < maxError){
                 logger.info("converged on epoc: {}. mean error: {}", i, meanError);
                 break;
             }
@@ -171,9 +171,9 @@ public class RBMTrainer {
     public double error(final Collection<double[]> minibatch) {
         SummaryStatistics errorStats = new SummaryStatistics();
         for(double[] data : minibatch){
-            double[] reconstruct = rbm.activateVisible(rbm.activateHidden(data, random), random);
+            double[] reconstruct = rbm.activateVisible(rbm.activateHidden(data));
             errorStats.addValue(lossFunction.loss(data, reconstruct));
         }
-        return errorStats.getMean();
+        return Math.sqrt( errorStats.getSumsq() / errorStats.getN() );
     }
 }

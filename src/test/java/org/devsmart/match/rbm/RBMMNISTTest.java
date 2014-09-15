@@ -1,15 +1,11 @@
 package org.devsmart.match.rbm;
 
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
-import org.devsmart.match.LossFunction;
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 public class RBMMNISTTest {
 
@@ -83,7 +81,7 @@ public class RBMMNISTTest {
                 }
 
                 {
-                    double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(visible, r));
+                    double[] reconstruct = rbm.activateVisible(rbm.activateHidden(visible));
                     BufferedImage image = imageFile.createImage(reconstruct);
                     File outputFile = new File(String.format("testr%d.png", i));
                     ImageIO.write(image, "png", outputFile);

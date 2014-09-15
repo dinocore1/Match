@@ -50,7 +50,7 @@ public class DBN {
 
         for(int i=0;i<finalLayer;i++){
 
-            input = mRBMs.get(i).activateHidden(input, r);
+            input = mRBMs.get(i).activateHidden(input);
 
             layer = mLayers.get(i+1);
             if(layer != null && layer.external != null && layer.external.length > 0){
