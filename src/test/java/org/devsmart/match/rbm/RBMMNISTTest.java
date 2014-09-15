@@ -68,9 +68,9 @@ public class RBMMNISTTest {
         };
 
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
-        trainer.learningRate = 0.1;
-        trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.train(0.5, 10000);
+        trainer.learningRate = 0.3;
+        //trainer.lossFunction = LossFunction.CrossEntropy;
+        trainer.train(1, 5000);
 
 
         {

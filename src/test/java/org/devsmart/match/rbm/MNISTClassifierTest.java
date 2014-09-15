@@ -39,21 +39,21 @@ public class MNISTClassifierTest {
             final int batchSize = 100;
 
             @Override
-            public Collection<double[][][]> createMinibatch() {
+            public Collection<double[][]> createMinibatch() {
                 try {
                     Collections.shuffle(images, r);
-                    ArrayList<double[][][]> retval = new ArrayList<double[][][]>(batchSize);
+                    ArrayList<double[][]> retval = new ArrayList<double[][]>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
-                        double[][][] input = new double[dbn.mLayers.size()][2][];
+                        double[][] input = new double[2][];
 
                         double[] rawPixData = imageFile.getImage(images.get(i));
                         for(int q=0;q<rawPixData.length;q++){
                             rawPixData[q] = rawPixData[q] > 0.3 ? 1.0 : 0.0;
                         }
 
-                        input[0][0] = rawPixData;
-                        input[2][1] = new double[10];
-                        input[2][1][labelFile.getLabel(images.get(i))] = 1;
+                        input[0] = rawPixData;
+                        input[1] = new double[10];
+                        input[1][labelFile.getLabel(images.get(i))] = 1;
                         retval.add(input);
                     }
                     return retval;
@@ -66,10 +66,9 @@ public class MNISTClassifierTest {
 
 
         DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
-        trainer.numEpocsPerLayer = 2000;
-        trainer.learningRate = 0.2;
-        trainer.numGibbsSteps = 3;
-        trainer.train();
+        trainer.learningRate = 0.5;
+        trainer.numGibbsSteps = 1;
+        trainer.train(0.5, 5000);
 
         int numCorrect = 0;
         int total = 0;
@@ -81,15 +80,12 @@ public class MNISTClassifierTest {
             double lowestFreeEnergy = Double.NaN;
             int bestDigitClass = 0;
             for(int digit=0;digit<10;digit++) {
-                double[][][] input = new double[dbn.mLayers.size()][2][];
-                input[0][0] = bottomVisible;
-                input[2][1] = new double[10];
-                input[2][1][digit] = 1;
+                double[][] input = new double[2][];
+                input[0] = bottomVisible;
+                input[1] = new double[10];
+                input[1][digit] = 1;
 
                 double[] visible = dbn.propagateUp(2, input, r);
-                visible = dbn.getVisibleForLayer(2, input, visible);
-                //visible = dbn.mRBMs.get(2).getVisibleInput(visible);
-
                 double freeEnergy = dbn.mRBMs.get(2).freeEnergy(visible);
 
                 System.out.println(String.format("digit: %d free energy: %.5g", digit, freeEnergy));

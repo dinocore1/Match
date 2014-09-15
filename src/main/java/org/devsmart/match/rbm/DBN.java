@@ -34,38 +34,34 @@ public class DBN {
         }
     }
 
-    public double[] getVisibleForLayer(int layer, double[][][] input, double[] lastVisible) {
-        final RBM rbm = mRBMs.get(layer);
-        final double[][] layerInput = input[layer];
+    public double[] propagateUp(final int finalLayer, double[][] inputs, Random r) {
+        int externalInput = 0;
+        Layer layer = mLayers.get(0);
+        double[] input = inputs[0];
 
-        if(lastVisible == null){
-            lastVisible = new double[rbm.visible.length];
+        if(layer.external != null && layer.external.length > 0){
+            double[] tmp = new double[layer.connected.length + layer.external.length];
+            System.arraycopy(input, 0, tmp, 0, layer.connected.length);
+            System.arraycopy(inputs[++externalInput], 0, tmp, layer.connected.length, layer.external.length);
+            input = tmp;
         }
 
-        if(lastVisible.length != rbm.visible.length){
-            double[] tmp = new double[rbm.visible.length];
-            System.arraycopy(lastVisible, 0, tmp, 0, lastVisible.length);
-            lastVisible = tmp;
-        }
-        if(layerInput[0] != null){
-            System.arraycopy(layerInput[0], 0, lastVisible, 0, layerInput[0].length);
-        }
-        if(layerInput[1] != null){
-            System.arraycopy(layerInput[1], 0, lastVisible, lastVisible.length-layerInput[1].length, layerInput[1].length);
-        }
 
-        return lastVisible;
-    }
 
-    public double[] propagateUp(int finalLayer, double[][][] input, Random r) {
-        double[] visible = null;
         for(int i=0;i<finalLayer;i++){
-            RBM rbm = mRBMs.get(i);
-            visible = getVisibleForLayer(i, input, visible);
-            visible = rbm.getHiddenInput(visible);
+
+            input = mRBMs.get(i).activateHidden(input, r);
+
+            layer = mLayers.get(i+1);
+            if(layer != null && layer.external != null && layer.external.length > 0){
+                double[] tmp = new double[layer.connected.length + layer.external.length];
+                System.arraycopy(input, 0, tmp, 0, layer.connected.length);
+                System.arraycopy(inputs[++externalInput], 0, tmp, layer.connected.length, layer.external.length);
+                input = tmp;
+            }
         }
 
-        return visible;
+        return input;
     }
 
 }

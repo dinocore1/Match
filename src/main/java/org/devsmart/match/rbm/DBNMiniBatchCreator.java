@@ -7,10 +7,9 @@ public interface DBNMiniBatchCreator {
 
     /**
      * return a new random set of training examples.
-     * 1st dimention = layer
-     * 2nd dimention = 0 = connected input, 1 = external input
-     * 3rd dimention feature vector
+     * 1st dimention = input set. 0=bottom visible, 1>= extra inputs
+     * 2nd dimention = data vector
      * @return
      */
-    Collection<double[][][]> createMinibatch();
+    Collection<double[][]> createMinibatch();
 }

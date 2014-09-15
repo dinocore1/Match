@@ -125,20 +125,18 @@ public class RBMTrainer {
             lastB = b;
 
             final double error = error(minibatch);
-            if(i % 1 == 0){
-                logger.info("epoc: {} error: {}", i , error);
-            }
-
             errorStats.addValue(error);
             final double meanError = errorStats.getMean();
             final double stddivError = errorStats.getStandardDeviation();
-            logger.info("avg error: {} 3*sigma: {}",errorStats.getMean(), 3*stddivError);
+            if(i % 10 == 0){
+                logger.info("epoc: {} avg error: {} 3*stddiv error: {}", i, meanError, 3*stddivError);
+            }
             if(minError != null && meanError < minError){
                 logger.info("converged on epoc: {}. mean error: {}", i, meanError);
                 break;
             }
 
-            if(3*stddivError <= sigmaErrorDiff && errorStats.getN() > 3) {
+            if(3*stddivError <= sigmaErrorDiff && errorStats.getN() >= errorWindow) {
                 //converged
                 logger.info("converged on epoc: {}. mean error: {}", i, meanError);
                 break;
@@ -173,7 +171,7 @@ public class RBMTrainer {
     public double error(final Collection<double[]> minibatch) {
         SummaryStatistics errorStats = new SummaryStatistics();
         for(double[] data : minibatch){
-            double[] reconstruct = rbm.getVisibleInput(rbm.activateHidden(data, random));
+            double[] reconstruct = rbm.activateVisible(rbm.activateHidden(data, random), random);
             errorStats.addValue(lossFunction.loss(data, reconstruct));
         }
         return errorStats.getMean();

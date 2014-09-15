@@ -24,7 +24,7 @@ public class ContrastiveDivergence {
         }
 
         double[] negitive = input;
-        double[] hiddenNegitive = rbm.getHiddenInput(negitive);
+        double[] hiddenNegitive = rbm.activateHidden(negitive, r);
 
         final ArrayRealVector trainingVisibleV = new ArrayRealVector(trainingVisible);
         final ArrayRealVector hiddenPositiveV = new ArrayRealVector(hiddenPositive);
