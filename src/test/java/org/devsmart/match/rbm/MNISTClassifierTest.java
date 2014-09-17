@@ -1,16 +1,16 @@
 package org.devsmart.match.rbm;
 
 
-import org.devsmart.match.LossFunction;
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.data.MNISTLabelFile;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
 
 public class MNISTClassifierTest {
 
@@ -23,8 +23,8 @@ public class MNISTClassifierTest {
 
         DBNBuilder builder = new DBNBuilder();
         builder.addBernouliiLayer(imageFile.height*imageFile.width);
-        builder.addBernouliiLayer(100);
-        builder.addBernouliiLayer(100, 10);
+        builder.addBernouliiLayer(500);
+        builder.addBernouliiLayer(500, 10);
         builder.addBernouliiLayer(2000);
 
         final DBN dbn = builder.build();
@@ -37,7 +37,7 @@ public class MNISTClassifierTest {
         }
         DBNMiniBatchCreator miniBatchCreator = new DBNMiniBatchCreator() {
 
-            final int batchSize = 100;
+            final int batchSize = 20;
 
             @Override
             public Collection<double[][]> createMinibatch() {
@@ -68,9 +68,9 @@ public class MNISTClassifierTest {
 
         DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
         //trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.learningRate = 0.5;
+        trainer.learningRate = 0.3;
         trainer.numGibbsSteps = 1;
-        trainer.train(0.5, 5000);
+        trainer.train(-1, 5000);
 
         int numCorrect = 0;
         int total = 0;
