@@ -66,9 +66,11 @@ public class RBMMNISTTest {
         };
 
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
-        trainer.learningRate = 0.3;
+        trainer.learningRate = 0.1;
+        trainer.momentum = 0.9;
+        trainer.weightDecayCoefficient = 0.001;
         //trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.train(1, 5000);
+        trainer.train(1.5, 1000);
 
 
         {
@@ -81,6 +83,10 @@ public class RBMMNISTTest {
                 }
 
                 {
+                    for(int q=0;q<visible.length;q++){
+                        visible[q] = visible[q] > 0.3 ? 1.0 : 0.0;
+                    }
+
                     double[] reconstruct = rbm.activateVisible(rbm.activateHidden(visible));
                     BufferedImage image = imageFile.createImage(reconstruct);
                     File outputFile = new File(String.format("testr%d.png", i));
@@ -92,7 +98,7 @@ public class RBMMNISTTest {
                 double[] hidden = new double[rbm.hidden.length];
                 hidden[i%rbm.hidden.length] = 1;
 
-                double[] reconstruct = rbm.getVisibleInput(hidden);
+                double[] reconstruct = rbm.activateVisible(hidden);
                 BufferedImage image = imageFile.createImage(reconstruct);
                 File outputFile = new File(String.format("n%d.png", i));
                 ImageIO.write(image, "png", outputFile);

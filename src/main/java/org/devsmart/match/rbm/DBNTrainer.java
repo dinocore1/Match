@@ -21,6 +21,8 @@ public class DBNTrainer {
     public double learningRate = 0.1;
     public LossFunction lossFunction = LossFunction.SumOfSquares;
     public Random random = new Random();
+    public double momentum = 0.9;
+    public double weightDecayCoefficient = 0.0001;
 
     public DBNTrainer(DBN dbn, DBNMiniBatchCreator callback){
         this.dbn = dbn;
@@ -48,6 +50,8 @@ public class DBNTrainer {
             trainer.numGibbsSteps = numGibbsSteps;
             trainer.learningRate = learningRate;
             trainer.lossFunction = lossFunction;
+            trainer.weightDecayCoefficient = weightDecayCoefficient;
+            trainer.momentum = momentum;
             trainer.train(sigmaErrorDiff, maxEpoc);
         }
     }

@@ -23,9 +23,9 @@ public class MNISTClassifierTest {
 
         DBNBuilder builder = new DBNBuilder();
         builder.addBernouliiLayer(imageFile.height*imageFile.width);
+        //builder.addBernouliiLayer(100);
+        builder.addBernouliiLayer(100, 10);
         builder.addBernouliiLayer(500);
-        builder.addBernouliiLayer(500, 10);
-        builder.addBernouliiLayer(2000);
 
         final DBN dbn = builder.build();
 
@@ -68,15 +68,20 @@ public class MNISTClassifierTest {
 
         DBNTrainer trainer = new DBNTrainer(dbn, miniBatchCreator);
         //trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.learningRate = 0.3;
+        trainer.learningRate = 0.1;
         trainer.numGibbsSteps = 1;
-        trainer.train(-1, 5000);
+        trainer.momentum = 0.9;
+        trainer.weightDecayCoefficient = 0.001;
+        trainer.train(-1, 2000);
 
         int numCorrect = 0;
         int total = 0;
         for(int i=0;i<500;i++){
             final int knownDigit = labelFile.getLabel(i);
             double[] bottomVisible = imageFile.getImage(i);
+            for(int q=0;q<bottomVisible.length;q++){
+                bottomVisible[q] = bottomVisible[q] > 0.3 ? 1.0 : 0.0;
+            }
             System.out.println(String.format("MNIST# %d Digit %d:", i, knownDigit));
 
             double lowestFreeEnergy = Double.NaN;
@@ -87,8 +92,8 @@ public class MNISTClassifierTest {
                 input[1] = new double[10];
                 input[1][digit] = 1;
 
-                double[] visible = dbn.propagateUp(2, input, r);
-                double freeEnergy = dbn.mRBMs.get(2).freeEnergy(visible);
+                double[] visible = dbn.propagateUp(1, input, r);
+                double freeEnergy = dbn.mRBMs.get(1).freeEnergy(visible);
 
                 System.out.println(String.format("digit: %d free energy: %.5g", digit, freeEnergy));
 

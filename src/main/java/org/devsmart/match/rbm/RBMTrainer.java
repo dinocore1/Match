@@ -10,6 +10,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
 import org.devsmart.match.LossFunction;
+import org.devsmart.match.WeightDecay;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.GaussianNuron;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +37,8 @@ public class RBMTrainer {
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
     public double momentum = 0.1;
-    public double weightDecay = 0;
+    public double weightDecayCoefficient = 0.001;
+    public WeightDecay weightDecayFunction = WeightDecay.L1;
 
     public RBMTrainer(RBM rbm, RBMMiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
@@ -88,7 +89,7 @@ public class RBMTrainer {
     }
 
 
-    public void train(Double sigmaErrorDiff, int errorWindow, Double maxError, long maxEpoc) throws Exception {
+    public void train(Double sigmaErrorDiff, int errorWindow, Double maxError, long maxEpoch) throws Exception {
         Stopwatch stopwatch = Stopwatch.createStarted();
         setInitialValues(rbm, mMinibatchCreator.createMiniBatch(), random);
 
@@ -97,7 +98,7 @@ public class RBMTrainer {
         RealVector lastB = new ArrayRealVector(rbm.b.getDimension());
         DescriptiveStatistics errorStats = new DescriptiveStatistics(errorWindow);
 
-        for(int i=0;i<maxEpoc;i++){
+        for(int i=0;i<maxEpoch;i++){
             final Collection<double[]> minibatch = mMinibatchCreator.createMiniBatch();
             ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());
             for(double[] trainingVisible : minibatch){
@@ -115,10 +116,11 @@ public class RBMTrainer {
                 b = b.add(result.BGradient.mapMultiplyToSelf(multiplier));
             }
 
+            //W = W + l(g + m*g(t-1) - d*W)
 
-            rbm.W = rbm.W.add( W.add(lastW.scalarMultiply(momentum).subtract(rbm.W.scalarMultiply(weightDecay))).scalarMultiply(learningRate) );
-            rbm.a = rbm.a.add( a.add(lastA.mapMultiply(momentum).subtract(rbm.a.mapMultiply(weightDecay))).mapMultiply(learningRate) );
-            rbm.b = rbm.b.add( b.add(lastB.mapMultiply(momentum).subtract(rbm.b.mapMultiply(weightDecay))).mapMultiply(learningRate) );
+            rbm.W = rbm.W.add( (W.add(lastW.scalarMultiply(momentum).subtract(weightDecayFunction.getWeightPenalty(rbm.W, weightDecayCoefficient)))).scalarMultiply(learningRate));
+            rbm.a = rbm.a.add( (a.add(lastA.mapMultiply(momentum))) .mapMultiply(learningRate));
+            rbm.b = rbm.b.add( (b.add(lastB.mapMultiply(momentum))) .mapMultiply(learningRate) );
 
             lastW = W;
             lastA = a;
