@@ -98,6 +98,14 @@ public class RBMTrainer {
         RealVector lastB = new ArrayRealVector(rbm.b.getDimension());
         DescriptiveStatistics errorStats = new DescriptiveStatistics(errorWindow);
 
+        {
+            final double error = error(mMinibatchCreator.createMiniBatch());
+            errorStats.addValue(error);
+            final double meanError = errorStats.getMean();
+            final double stddivError = errorStats.getStandardDeviation();
+            logger.info("epoc: {} avg error: {} 3*stddiv error: {}", 0, meanError, 3 * stddivError);
+        }
+
         for(int i=0;i<maxEpoch;i++){
             final Collection<double[]> minibatch = mMinibatchCreator.createMiniBatch();
             ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());

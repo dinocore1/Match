@@ -29,8 +29,7 @@ public class DBNTrainer {
         this.mMinibachCreator = callback;
     }
 
-
-    public void train(double sigmaErrorDiff, long maxEpoc) throws Exception {
+    public void train(Double sigmaErrorDiff, int errorWindow, Double maxError, long maxEpoch) throws Exception {
         for(int layer=0;layer<dbn.mRBMs.size();layer++){
             logger.info("training layer: {}", layer);
             RBM rbm = dbn.mRBMs.get(layer);
@@ -52,8 +51,12 @@ public class DBNTrainer {
             trainer.lossFunction = lossFunction;
             trainer.weightDecayCoefficient = weightDecayCoefficient;
             trainer.momentum = momentum;
-            trainer.train(sigmaErrorDiff, maxEpoc);
+            trainer.train(sigmaErrorDiff, errorWindow, maxError, maxEpoch);
         }
+    }
+
+    public void train(double sigmaErrorDiff, long maxEpoc) throws Exception {
+        train(sigmaErrorDiff, 10, null, maxEpoc);
     }
 
 

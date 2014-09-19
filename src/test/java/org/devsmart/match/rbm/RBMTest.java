@@ -53,7 +53,7 @@ public class RBMTest {
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
         trainer.random = r;
         trainer.weightDecayCoefficient = 0.00001;
-        trainer.train(1e-5, 20, 0.00001, 5000);
+        trainer.train(-1.0, 10, 0.01, 5000);
 
         double[] hidden = rbm.activateHidden(new double[]{
                 0, 1, 1,

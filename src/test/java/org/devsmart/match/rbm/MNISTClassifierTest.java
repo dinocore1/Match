@@ -72,7 +72,7 @@ public class MNISTClassifierTest {
         trainer.numGibbsSteps = 1;
         trainer.momentum = 0.9;
         trainer.weightDecayCoefficient = 0.001;
-        trainer.train(-1, 2000);
+        trainer.train(-1.0, 10, 0.1, 10000);
 
         int numCorrect = 0;
         int total = 0;

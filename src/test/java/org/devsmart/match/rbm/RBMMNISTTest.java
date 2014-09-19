@@ -70,7 +70,7 @@ public class RBMMNISTTest {
         trainer.momentum = 0.9;
         trainer.weightDecayCoefficient = 0.001;
         //trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.train(1.5, 1000);
+        trainer.train(.0025, 1000);
 
 
         {

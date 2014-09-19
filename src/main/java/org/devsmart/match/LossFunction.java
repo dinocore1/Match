@@ -18,7 +18,7 @@ public interface LossFunction {
             for(int i=0;i<x.length;i++){
                 error.addValue(x[i] - y[i]);
             }
-            return error.getSumsq();
+            return Math.sqrt( error.getSumsq() / error.getN() );
         }
     };
 
