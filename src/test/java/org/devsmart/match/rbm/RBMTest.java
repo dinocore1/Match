@@ -5,12 +5,16 @@ import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
 import org.junit.Test;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class RBMTest {
 
@@ -20,6 +24,27 @@ public class RBMTest {
             retval[i] = new BernoulliNuron();
         }
         return retval;
+    }
+
+    @Test
+    public void testSave() throws Exception {
+        RBM rbm = new RBM(createBernoliiLayer(5), createBernoliiLayer(3));
+
+        File saveFile = File.createTempFile("test", "rbm");
+        FileOutputStream fout = new FileOutputStream(saveFile);
+        rbm.save(fout);
+        fout.close();
+
+        DataInputStream din = new DataInputStream(new FileInputStream(saveFile));
+        RBM rbm2 = RBM.load(din);
+        din.close();
+
+        assertEquals(rbm.W.getRowDimension(), rbm2.W.getRowDimension());
+        assertEquals(rbm.W.getColumnDimension(), rbm2.W.getColumnDimension());
+        for(int i=0;i<rbm.W.getRowDimension();i++){
+            assertArrayEquals(rbm.W.getRow(i), rbm2.W.getRow(i), 0.0);
+        }
+
     }
 
     @Test

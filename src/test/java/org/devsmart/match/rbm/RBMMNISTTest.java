@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,10 +68,16 @@ public class RBMMNISTTest {
 
         RBMTrainer trainer = new RBMTrainer(rbm, miniBatchCreator);
         trainer.learningRate = 0.1;
+        trainer.numGibbsSteps = 1;
         trainer.momentum = 0.9;
-        trainer.weightDecayCoefficient = 0.001;
-        //trainer.lossFunction = LossFunction.CrossEntropy;
-        trainer.train(.0025, 1000);
+        trainer.weightDecayCoefficient = 0.00001;
+        trainer.train(-1.0, 10, 0.1, 10000);
+
+        {
+            FileOutputStream out = new FileOutputStream("mnist-100.rbm");
+            rbm.save(out);
+            out.close();
+        }
 
 
         {
