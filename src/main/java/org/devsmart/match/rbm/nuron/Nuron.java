@@ -1,12 +1,9 @@
 package org.devsmart.match.rbm.nuron;
 
 
-public interface Nuron {
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 
-    /**
-     *
-     * @param input
-     * @return probibility nuron will activate given its input
-     */
-    double activate(double input);
+public interface Nuron extends UnivariateDifferentiableFunction {
+
+
 }

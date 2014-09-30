@@ -1,6 +1,8 @@
 package org.devsmart.match.rbm.nuron;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.function.Gaussian;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 
 public class GaussianNuron implements Nuron {
 
@@ -26,9 +28,14 @@ public class GaussianNuron implements Nuron {
         return sigma;
     }
 
+
     @Override
-    public double activate(double input) {
-        double retval = gaussian.value(input);
-        return retval;
+    public DerivativeStructure value(DerivativeStructure t) throws DimensionMismatchException {
+        return gaussian.value(t);
+    }
+
+    @Override
+    public double value(double x) {
+        return gaussian.value(x);
     }
 }

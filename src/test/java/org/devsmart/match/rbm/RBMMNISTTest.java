@@ -4,6 +4,7 @@ package org.devsmart.match.rbm;
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.SoftPlus;
 import org.junit.Test;
 
 import java.awt.image.BufferedImage;
@@ -25,6 +26,14 @@ public class RBMMNISTTest {
         Nuron[] retval = new Nuron[size];
         for(int i=0;i<retval.length;i++){
             retval[i] = new BernoulliNuron();
+        }
+        return retval;
+    }
+
+    private Nuron[] createSoftPlusLayer(int size) {
+        Nuron[] retval = new Nuron[size];
+        for(int i=0;i<retval.length;i++){
+            retval[i] = new SoftPlus();
         }
         return retval;
     }

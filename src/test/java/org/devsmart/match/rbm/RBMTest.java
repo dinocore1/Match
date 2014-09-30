@@ -3,6 +3,7 @@ package org.devsmart.match.rbm;
 
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
 import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.SoftPlus;
 import org.junit.Test;
 
 import java.io.DataInputStream;
@@ -14,7 +15,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class RBMTest {
 
@@ -26,9 +28,17 @@ public class RBMTest {
         return retval;
     }
 
+    private Nuron[] createSoftPlusLayer(int size) {
+        Nuron[] retval = new Nuron[size];
+        for(int i=0;i<retval.length;i++){
+            retval[i] = new SoftPlus();
+        }
+        return retval;
+    }
+
     @Test
     public void testSave() throws Exception {
-        RBM rbm = new RBM(createBernoliiLayer(5), createBernoliiLayer(3));
+        RBM rbm = new RBM(createBernoliiLayer(5), createSoftPlusLayer(3));
 
         File saveFile = File.createTempFile("test", "rbm");
         FileOutputStream fout = new FileOutputStream(saveFile);
