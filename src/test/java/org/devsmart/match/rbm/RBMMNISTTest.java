@@ -3,7 +3,7 @@ package org.devsmart.match.rbm;
 
 import org.devsmart.match.data.MNISTImageFile;
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
-import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 import org.devsmart.match.rbm.nuron.SoftPlus;
 import org.junit.Test;
 
@@ -22,16 +22,16 @@ public class RBMMNISTTest {
 
     final Random r = new Random(1);
 
-    private Nuron[] createBernoliiLayer(int size) {
-        Nuron[] retval = new Nuron[size];
+    private Neuron[] createBernoliiLayer(int size) {
+        Neuron[] retval = new Neuron[size];
         for(int i=0;i<retval.length;i++){
             retval[i] = new BernoulliNuron();
         }
         return retval;
     }
 
-    private Nuron[] createSoftPlusLayer(int size) {
-        Nuron[] retval = new Nuron[size];
+    private Neuron[] createSoftPlusLayer(int size) {
+        Neuron[] retval = new Neuron[size];
         for(int i=0;i<retval.length;i++){
             retval[i] = new SoftPlus();
         }

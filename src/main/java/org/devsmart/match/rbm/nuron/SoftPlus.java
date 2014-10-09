@@ -5,7 +5,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.function.Logistic;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 
-public class SoftPlus implements Nuron {
+public class SoftPlus implements Neuron {
 
     Logistic logistic = new Logistic();
 

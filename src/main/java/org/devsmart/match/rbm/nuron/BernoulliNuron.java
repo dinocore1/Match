@@ -5,7 +5,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 
-public class BernoulliNuron implements Nuron {
+public class BernoulliNuron implements Neuron {
 
     private static Sigmoid sigmoid = new Sigmoid();
 

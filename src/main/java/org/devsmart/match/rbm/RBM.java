@@ -6,19 +6,18 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.FastMath;
-import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
 public class RBM {
 
-    final Nuron[] visible;
-    final Nuron[] hidden;
+    final Neuron[] visible;
+    final Neuron[] hidden;
 
     //weights
     RealMatrix W;
@@ -30,11 +29,11 @@ public class RBM {
     RealVector b;
 
     protected RBM(int visible, int hidden) {
-        this.visible = new Nuron[visible];
-        this.hidden = new Nuron[hidden];
+        this.visible = new Neuron[visible];
+        this.hidden = new Neuron[hidden];
     }
 
-    public RBM(Nuron[] visible, Nuron[] hidden) {
+    public RBM(Neuron[] visible, Neuron[] hidden) {
         this.visible = visible;
         this.hidden = hidden;
         this.W = new Array2DRowRealMatrix(visible.length, hidden.length);

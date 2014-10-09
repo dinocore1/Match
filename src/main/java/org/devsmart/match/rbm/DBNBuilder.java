@@ -1,7 +1,7 @@
 package org.devsmart.match.rbm;
 
 import org.devsmart.match.rbm.nuron.BernoulliNuron;
-import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 
 import java.util.ArrayList;
 
@@ -21,11 +21,11 @@ public class DBNBuilder {
 
     public DBNBuilder addBernouliiLayer(final int numNurons, final int numExternal) {
         DBN.Layer layer = new DBN.Layer();
-        layer.connected = new Nuron[numNurons];
+        layer.connected = new Neuron[numNurons];
         for(int i=0;i<numNurons;i++){
             layer.connected[i] = new BernoulliNuron();
         }
-        layer.external = new Nuron[numExternal];
+        layer.external = new Neuron[numExternal];
         for(int i=0;i<numExternal;i++){
             layer.external[i] = new BernoulliNuron();
         }

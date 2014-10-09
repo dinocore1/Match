@@ -4,7 +4,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.function.Gaussian;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 
-public class GaussianNuron implements Nuron {
+public class GaussianNuron implements Neuron {
 
     private double mean = 0;
     private double sigma = 1;

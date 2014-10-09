@@ -1,9 +1,7 @@
 package org.devsmart.match.rbm;
 
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
-import org.devsmart.match.rbm.nuron.Nuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,8 +10,8 @@ import java.util.Random;
 public class DBN {
 
     public static class Layer {
-        Nuron[] connected;
-        Nuron[] external;
+        Neuron[] connected;
+        Neuron[] external;
     }
 
     ArrayList<Layer> mLayers;
@@ -23,11 +21,11 @@ public class DBN {
         mLayers = new ArrayList<Layer>(layers);
         mRBMs = new ArrayList<RBM>(mLayers.size()-1);
         for(int i=0;i<mLayers.size()-1;i++){
-            Nuron[] visible = new Nuron[mLayers.get(i).connected.length + mLayers.get(i).external.length];
+            Neuron[] visible = new Neuron[mLayers.get(i).connected.length + mLayers.get(i).external.length];
             System.arraycopy(mLayers.get(i).connected, 0, visible, 0, mLayers.get(i).connected.length);
             System.arraycopy(mLayers.get(i).external, 0, visible, mLayers.get(i).connected.length, mLayers.get(i).external.length);
 
-            Nuron[] hidden = new Nuron[mLayers.get(i+1).connected.length];
+            Neuron[] hidden = new Neuron[mLayers.get(i+1).connected.length];
             System.arraycopy(mLayers.get(i+1).connected, 0, hidden, 0, mLayers.get(i+1).connected.length);
 
             mRBMs.add(new RBM(visible, hidden));
