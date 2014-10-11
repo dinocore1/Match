@@ -1,30 +1,26 @@
 package org.devsmart.match.neuralnet;
 
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.devsmart.match.rbm.nuron.Neuron;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class NeuralNet {
 
-    public class Context {
+    public static class NeuronState {
+        final Neuron neuron;
+        double input = 0;
+        double output = 0;
+        double error = 0;
 
-        class NeuronState {
-            final Neuron neuron;
-            double input = 0;
-            double output = 0;
-
-            public NeuronState(Neuron neuron) {
-                this.neuron = neuron;
-            }
+        public NeuronState(Neuron neuron) {
+            this.neuron = neuron;
         }
+    }
+
+    public class Context {
 
         HashMap<Neuron, NeuronState> states = new HashMap<Neuron, NeuronState>();
 
@@ -83,6 +79,7 @@ public class NeuralNet {
     Neuron[] outputLayer;
 
     private Set<Neuron> neurons = new HashSet<Neuron>();
+    private LinkedHashSet<Synapse> synapses = new LinkedHashSet<>();
     private ListMultimap<Neuron, Synapse> inputs = LinkedListMultimap.create();
     private ListMultimap<Neuron, Synapse> outputs = LinkedListMultimap.create();
 
@@ -92,8 +89,14 @@ public class NeuralNet {
         neurons.add(to);
         Synapse synapse = new Synapse(from, to);
         synapse.weight = weight;
+
+        synapses.add(synapse);
         inputs.put(to, synapse);
         outputs.put(from, synapse);
+    }
+
+    public Collection<Synapse> getSynapases() {
+        return Collections.unmodifiableCollection(synapses);
     }
 
     public Collection<Synapse> getInputSynapses(Neuron neuron) {
