@@ -77,27 +77,12 @@ public class NeuralNet {
 
     Neuron[] inputLayer;
     Neuron[] outputLayer;
+    Synapse[] synapses;
 
-    private Set<Neuron> neurons = new HashSet<Neuron>();
-    private LinkedHashSet<Synapse> synapses = new LinkedHashSet<>();
-    private ListMultimap<Neuron, Synapse> inputs = LinkedListMultimap.create();
-    private ListMultimap<Neuron, Synapse> outputs = LinkedListMultimap.create();
+    ListMultimap<Neuron, Synapse> inputs = LinkedListMultimap.create();
+    ListMultimap<Neuron, Synapse> outputs = LinkedListMultimap.create();
 
 
-    public void addConnection(Neuron from, Neuron to, double weight){
-        neurons.add(from);
-        neurons.add(to);
-        Synapse synapse = new Synapse(from, to);
-        synapse.weight = weight;
-
-        synapses.add(synapse);
-        inputs.put(to, synapse);
-        outputs.put(from, synapse);
-    }
-
-    public Collection<Synapse> getSynapases() {
-        return Collections.unmodifiableCollection(synapses);
-    }
 
     public Collection<Synapse> getInputSynapses(Neuron neuron) {
         return inputs.get(neuron);

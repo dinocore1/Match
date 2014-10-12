@@ -11,7 +11,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
 import org.devsmart.match.LossFunction;
 import org.devsmart.match.WeightDecay;
-import org.devsmart.match.rbm.nuron.BernoulliNuron;
+import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.devsmart.match.rbm.nuron.GaussianNuron;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,11 +74,9 @@ public class RBMTrainer {
 
         for(int i=0;i<rbm.visible.length;i++){
             if(rbm.visible[i] instanceof GaussianNuron){
-                double sigma = trainStats[i].getStandardDeviation();
-                sigma = sigma == 0 ? 1 : sigma;
-                ((GaussianNuron)rbm.visible[i]).setParams(0, 1);
-                rbm.a.setEntry(i, trainStats[i].getMean());
-            } else if(rbm.visible[i] instanceof BernoulliNuron){
+                double variance = trainStats[i].getVariance();
+                rbm.a.setEntry(i, trainStats[i].getMean() / variance);
+            } else if(rbm.visible[i] instanceof SigmoidNuron){
                 double mean = trainStats[i].getMean();
                 mean = Math.max(0.1, mean);
                 mean = Math.min(0.9, mean);

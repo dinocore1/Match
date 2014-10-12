@@ -114,7 +114,7 @@ public class RBM {
         for(int j=0;j<hidden.length;j++){
             double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
             sum += b.getEntry(j);
-            retval[j] = hidden[j].activate(sum);
+            retval[j] = hidden[j].value(sum);
         }
         return retval;
     }
@@ -124,7 +124,7 @@ public class RBM {
         for(int j=0;j<hidden.length;j++){
             double sum = W.getColumnVector(j).dotProduct(new ArrayRealVector(visible));
             sum += b.getEntry(j);
-            double prob = hidden[j].activate(sum);
+            double prob = hidden[j].value(sum);
             retval[j] = r.nextDouble() < prob ? 1.0 : 0.0;
         }
         return retval;
@@ -135,7 +135,7 @@ public class RBM {
         for(int i=0;i<visible.length;i++){
             double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
             sum += a.getEntry(i);
-            retval[i] = visible[i].activate(sum);
+            retval[i] = visible[i].value(sum);
         }
         return retval;
     }
@@ -145,7 +145,7 @@ public class RBM {
         for(int i=0;i<visible.length;i++){
             double sum = W.getRowVector(i).dotProduct(new ArrayRealVector(hidden));
             sum += a.getEntry(i);
-            double prob = visible[i].activate(sum);
+            double prob = visible[i].value(sum);
             retval[i] = r.nextDouble() < prob ? 1.0 : 0.0;
         }
         return retval;

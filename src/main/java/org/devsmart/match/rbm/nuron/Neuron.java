@@ -1,14 +1,10 @@
 package org.devsmart.match.rbm.nuron;
 
 
-import java.util.HashSet;
+public interface Neuron {
 
-public abstract class Neuron {
+    double value(double input);
+    double derivative(double input);
 
-    public abstract double value(double input);
-    public abstract double derivitive(double input);
-
-    public final HashSet<Neuron> inputs = new HashSet<Neuron>();
-    public final HashSet<Neuron> output = new HashSet<Neuron>();
 
 }

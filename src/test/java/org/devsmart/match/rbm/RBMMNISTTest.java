@@ -2,7 +2,7 @@ package org.devsmart.match.rbm;
 
 
 import org.devsmart.match.data.MNISTImageFile;
-import org.devsmart.match.rbm.nuron.BernoulliNuron;
+import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.devsmart.match.rbm.nuron.Neuron;
 import org.devsmart.match.rbm.nuron.SoftPlus;
 import org.junit.Test;
@@ -25,7 +25,7 @@ public class RBMMNISTTest {
     private Neuron[] createBernoliiLayer(int size) {
         Neuron[] retval = new Neuron[size];
         for(int i=0;i<retval.length;i++){
-            retval[i] = new BernoulliNuron();
+            retval[i] = new SigmoidNuron();
         }
         return retval;
     }
