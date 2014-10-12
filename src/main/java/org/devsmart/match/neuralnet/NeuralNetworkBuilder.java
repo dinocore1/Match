@@ -2,10 +2,12 @@ package org.devsmart.match.neuralnet;
 
 
 import com.google.common.base.Throwables;
+import org.devsmart.match.rbm.nuron.Bias;
 import org.devsmart.match.rbm.nuron.Neuron;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class NeuralNetworkBuilder {
 
@@ -25,6 +27,7 @@ public class NeuralNetworkBuilder {
 
     private NeuralNet mNeuralNet;
     private LinkedList<Synapse> mSynapses = new LinkedList<Synapse>();
+    public Random random = new Random();
 
     public NeuralNetworkBuilder withInputs(int numInputs, Class<? extends Neuron> type) {
         mInputs = new Layer(numInputs, type);
@@ -49,13 +52,19 @@ public class NeuralNetworkBuilder {
             throw new IllegalArgumentException("must have at least one output");
         }
 
+        LinkedList<Neuron> allNeurons = new LinkedList<Neuron>();
         mNeuralNet = new NeuralNet();
 
         mNeuralNet.inputLayer = new Neuron[mInputs.numNeurons];
         ArrayList<Neuron> lastLayer = new ArrayList<>(mInputs.numNeurons);
         for(int i=0;i<mInputs.numNeurons;i++){
             mNeuralNet.inputLayer[i] = createNeuron(mInputs.classType);
+            allNeurons.add(mNeuralNet.inputLayer[i]);
             lastLayer.add(mNeuralNet.inputLayer[i]);
+
+            Bias b = new Bias();
+            allNeurons.add(b);
+            addConnection(b, mNeuralNet.inputLayer[i], random.nextGaussian());
         }
 
         mLayers.add(mOutputs);
@@ -65,10 +74,15 @@ public class NeuralNetworkBuilder {
             ArrayList<Neuron> neurons = new ArrayList<>(layer.numNeurons);
             for(int i=0;i<layer.numNeurons;i++){
                 Neuron n = createNeuron(layer.classType);
+                allNeurons.add(n);
                 neurons.add(n);
 
+                Bias b = new Bias();
+                allNeurons.add(b);
+                addConnection(b, n, 1);
+
                 for(Neuron l : lastLayer) {
-                    addConnection(l, n, 0);
+                    addConnection(l, n, random.nextGaussian());
                 }
             }
             lastLayer = neurons;
@@ -77,6 +91,7 @@ public class NeuralNetworkBuilder {
         mNeuralNet.outputLayer = lastLayer.toArray(new Neuron[lastLayer.size()]);
 
         mNeuralNet.synapses = mSynapses.toArray(new Synapse[mSynapses.size()]);
+        mNeuralNet.neurons = allNeurons.toArray(new Neuron[allNeurons.size()]);
 
         return mNeuralNet;
     }

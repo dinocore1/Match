@@ -3,6 +3,7 @@ package org.devsmart.match.neuralnet;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.devsmart.match.rbm.nuron.Bias;
 import org.devsmart.match.rbm.nuron.Neuron;
 
 import java.util.*;
@@ -25,11 +26,20 @@ public class NeuralNet {
         HashMap<Neuron, NeuronState> states = new HashMap<Neuron, NeuronState>();
 
         public Context(double[] inputs) {
+
+            for(Neuron n : neurons){
+                NeuronState s = new NeuronState(n);
+                if(n instanceof Bias){
+                    s.output = 1.0;
+                }
+                states.put(n, s);
+            }
+
+
             Set<Neuron> next = new HashSet<Neuron>();
             for(int i=0;i<inputLayer.length;i++) {
-                NeuronState state = new NeuronState(inputLayer[i]);
+                NeuronState state = states.get(inputLayer[i]);
                 state.output = inputs[i];
-                states.put(inputLayer[i], state);
 
                 for(Synapse s : outputs.get(inputLayer[i])){
                     next.add(s.to);
@@ -43,13 +53,9 @@ public class NeuralNet {
         }
 
         private Set<Neuron> feedForward(Iterable<Neuron> neurons) {
-            Set<Neuron> next = new HashSet<>();
+            Set<Neuron> next = new HashSet<Neuron>();
             for(Neuron n : neurons) {
                 NeuronState state = states.get(n);
-                if(state == null) {
-                    state = new NeuronState(n);
-                    states.put(n, state);
-                }
                 assert state.input == 0;
                 for(Synapse s : inputs.get(n)){
                     state.input += states.get(s.from).output * s.weight;
@@ -78,6 +84,7 @@ public class NeuralNet {
     Neuron[] inputLayer;
     Neuron[] outputLayer;
     Synapse[] synapses;
+    Neuron[] neurons;
 
     ListMultimap<Neuron, Synapse> inputs = LinkedListMultimap.create();
     ListMultimap<Neuron, Synapse> outputs = LinkedListMultimap.create();

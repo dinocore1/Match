@@ -40,7 +40,7 @@ public class Backpropagation {
                 }
 
                 for (Future<double[]> task : trainingTasks) {
-                    wavg.add(new ArrayRealVector(task.get()));
+                    wavg = wavg.add(new ArrayRealVector(task.get()));
                 }
 
                 wavg.mapMultiplyToSelf(1.0 / (double) miniBatch.size());
