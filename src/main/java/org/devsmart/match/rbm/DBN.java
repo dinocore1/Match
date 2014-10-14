@@ -14,8 +14,8 @@ public class DBN {
         Neuron[] external;
     }
 
-    ArrayList<Layer> mLayers;
-    ArrayList<RBM> mRBMs;
+    public ArrayList<Layer> mLayers;
+    public ArrayList<RBM> mRBMs;
 
     public DBN(Collection<Layer> layers){
         mLayers = new ArrayList<Layer>(layers);
