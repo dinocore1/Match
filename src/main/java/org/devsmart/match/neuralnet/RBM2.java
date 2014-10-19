@@ -5,10 +5,6 @@ import com.amd.aparapi.Kernel;
 
 public class RBM2 {
 
-    public final int numVisible;
-    public final int numHidden;
-
-
     /**
      * Array layout:
      *
@@ -19,6 +15,8 @@ public class RBM2 {
     final float[] weights;
     final float[] visible;
     final float[] hidden;
+    public final int numVisible;
+    public final int numHidden;
 
     private UpKernel upKernel = new UpKernel();
     private DownKernel downKernel = new DownKernel();
