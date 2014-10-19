@@ -9,8 +9,8 @@ public class RBM2 {
      * Array layout:
      *
      * weight_i_j = (i: visible, j: hidden) numVisible*j+i
-     * hiddenbias_i = numVisible*numHidden + i
-     * visiblebias_i = numVisible*numHidden + numHidden
+     * hiddenbias_j = numVisible*numHidden + j
+     * visiblebias_i = numVisible*numHidden + numHidden + i
      */
     final float[] weights;
     final float[] visible;
@@ -26,16 +26,29 @@ public class RBM2 {
         this.numHidden = numHidden;
         this.visible = new float[numVisible];
         this.hidden = new float[numHidden];
-        this.weights = new float[(numVisible+1)*(numHidden+1)];
+        this.weights = new float[numVisible*numHidden+numVisible+numHidden];
 
         upKernel.setExplicit(true);
         downKernel.setExplicit(true);
+    }
+
+    public synchronized float[] activateHidden(double[] visibleInput) {
+        assert visibleInput.length == numVisible;
+        for(int i=0;i<numVisible;i++) {
+            visible[i] = (float) visibleInput[i];
+        }
+
+        return activateHidden();
     }
 
     public synchronized float[] activateHidden(float[] visibleInput) {
         assert visibleInput.length == numVisible;
         System.arraycopy(visibleInput, 0, visible, 0, numVisible);
 
+        return activateHidden();
+    }
+
+    public synchronized float[] activateHidden() {
         upKernel.put(visible);
         upKernel.execute(numHidden);
         upKernel.get(hidden);

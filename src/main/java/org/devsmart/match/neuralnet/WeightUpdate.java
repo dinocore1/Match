@@ -35,7 +35,7 @@ public class WeightUpdate {
         kernel.put(params);
     }
 
-    public synchronized void update(float[] gradientInput) {
+    public synchronized float[] update(float[] gradientInput) {
         assert gradientInput.length == gradient.length;
         System.arraycopy(gradientInput, 0, gradient, 0, gradient.length);
 
@@ -43,6 +43,7 @@ public class WeightUpdate {
         kernel.put(gradient);
         kernel.execute(size);
         kernel.get(weights);
+        return weights;
     }
 
     class UpdateKernel extends Kernel {

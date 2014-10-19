@@ -7,6 +7,8 @@ import java.util.Random;
 
 public class ContrastiveDivergence2 {
 
+    private static final int MINIBATCHCOEFF = 0;
+
     private final RBM2 rbm;
 
     private float[] positiveVisible;
@@ -15,6 +17,7 @@ public class ContrastiveDivergence2 {
     private float[] positiveHidden;
     private float[] negitiveHidden;
     private float[] gradient;
+    private float[] params = new float[1];
     private final CDKernel kernel = new CDKernel();
 
     public ContrastiveDivergence2(RBM2 rbm){
@@ -24,7 +27,10 @@ public class ContrastiveDivergence2 {
         positiveHidden = new float[rbm.numHidden];
         negitiveHidden = new float[rbm.numHidden];
 
-        gradient = new float[(rbm.numHidden+1)*(rbm.numVisible+1)];
+        gradient = new float[rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden];
+
+        params[MINIBATCHCOEFF] = 1.0f;
+        kernel.setExplicit(true);
     }
 
     private static void sampleVector(float[] v, Random r) {
@@ -33,10 +39,39 @@ public class ContrastiveDivergence2 {
         }
     }
 
-    public float[] doIt(float[] visibleInput, int numGibbsSamples, Random r) {
+    public void resetGradient() {
+        for(int i=0;i<gradient.length;i++){
+            gradient[i] = 0;
+        }
+        kernel.put(gradient);
+    }
+
+    public void setMinibatchSize(int size) {
+        params[MINIBATCHCOEFF] = 1f / (float)size;
+        kernel.put(params);
+    }
+
+    public void doIt(double[] visibleInput, int numGibbsSamples, Random r) {
+        assert visibleInput.length == rbm.numVisible;
+
+        for(int i=0;i<rbm.numVisible;i++) {
+            positiveVisible[i] = (float)visibleInput[i];
+        }
+
+        doIt(numGibbsSamples, r);
+    }
+
+    public void doIt(float[] visibleInput, int numGibbsSamples, Random r) {
+        assert visibleInput.length == rbm.numVisible;
 
         System.arraycopy(visibleInput,0, positiveVisible, 0, rbm.numVisible);
-        float[] values = visibleInput;
+
+        doIt(numGibbsSamples, r);
+    }
+
+    public void doIt(int numGibbsSamples, Random r) {
+
+        float[] values = positiveVisible;
 
         for(int i=0;i<numGibbsSamples;i++){
             values = rbm.activateHidden(values);
@@ -56,8 +91,16 @@ public class ContrastiveDivergence2 {
         System.arraycopy(values, 0, negitiveHidden, 0, rbm.numHidden);
 
 
-        kernel.execute((rbm.numVisible+1)*(rbm.numHidden+1));
+        kernel.put(positiveVisible);
+        kernel.put(positiveHidden);
+        kernel.put(negitiveVisible);
+        kernel.put(negitiveHidden);
 
+        kernel.execute(rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden);
+    }
+
+    public float[] getGradient() {
+        kernel.get(gradient);
         return gradient;
     }
 
@@ -68,12 +111,13 @@ public class ContrastiveDivergence2 {
             final int gid = getGlobalId();
 
             if(gid < rbm.numVisible*rbm.numHidden) {
-                gradient[gid] = positiveVisible[gid/rbm.numVisible]*positiveHidden[gid%rbm.numHidden] - negitiveVisible[gid/rbm.numVisible]*negitiveHidden[gid%rbm.numHidden];
-            } else if(gid < rbm.numVisible*rbm.numHidden+rbm.numHidden) {
-                gradient[gid] = positiveHidden[gid - rbm.numVisible*rbm.numHidden] - negitiveHidden[gid - rbm.numVisible*rbm.numHidden];
+                gradient[gid] += params[MINIBATCHCOEFF] * (positiveVisible[gid/rbm.numVisible]*positiveHidden[gid%rbm.numHidden] - negitiveVisible[gid/rbm.numVisible]*negitiveHidden[gid%rbm.numHidden]);
+            } else if(gid < (rbm.numVisible*rbm.numHidden+rbm.numHidden)) {
+                gradient[gid] += params[MINIBATCHCOEFF] * ( positiveHidden[gid - rbm.numVisible*rbm.numHidden] - negitiveHidden[gid - rbm.numVisible*rbm.numHidden] );
             } else {
-                gradient[gid] = positiveVisible[gid - rbm.numVisible*rbm.numHidden+rbm.numHidden] - negitiveVisible[gid - rbm.numVisible*rbm.numHidden+rbm.numHidden];
+                gradient[gid] += params[MINIBATCHCOEFF] * ( positiveVisible[gid - (rbm.numVisible*rbm.numHidden+rbm.numHidden)] - negitiveVisible[gid - (rbm.numVisible*rbm.numHidden+rbm.numHidden)] );
             }
+
         }
     }
 
