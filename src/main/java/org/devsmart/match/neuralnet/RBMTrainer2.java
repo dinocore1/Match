@@ -23,16 +23,19 @@ public class RBMTrainer2 {
 
     public RBMTrainer2(RBM2 rbm, MiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
-        this.weightUpdate = new WeightUpdate(rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden, 0.1f);
+        this.weightUpdate = new WeightUpdate(rbm, 0.1f);
         this.contrastiveDivergence = new ContrastiveDivergence2(rbm);
         this.miniBatchCreator = miniBatchCreator;
 
     }
 
     public static void setInitialValues(RBM2 rbm, MiniBatchCreator miniBatchCreator, Random r) {
+
+        float[] weights = new float[rbm.numHidden*rbm.numVisible+rbm.numHidden+rbm.numVisible];
+
         //init weights zero-mean Gaussian with stddev of 0.01
         for(int i=0;i<rbm.numVisible*rbm.numHidden;i++){
-            rbm.weights[i] = (float)r.nextGaussian() * 0.01f;
+            weights[i] = (float)r.nextGaussian() * 0.01f;
         }
 
         SummaryStatistics[] trainStats = new SummaryStatistics[rbm.numVisible];
@@ -46,13 +49,19 @@ public class RBMTrainer2 {
             }
         }
 
+        for(int i=0;i<rbm.numHidden;i++){
+            weights[rbm.getHiddenBias(i)] = -4;
+        }
+
         for(int i=0;i<rbm.numVisible;i++){
             double mean = trainStats[i].getMean();
             mean = Math.max(0.0001, mean);
             mean = Math.min(0.9999, mean);
             float value = (float) FastMath.log(mean / (1 - mean));
-            rbm.weights[rbm.numVisible*rbm.numHidden+rbm.numHidden+i] = value;
+            weights[rbm.numVisible*rbm.numHidden+rbm.numHidden+i] = value;
         }
+
+        rbm.setWeights(weights);
     }
 
     public static double calcError(RBM2 rbm, Collection<TraningData> minibatch) {
@@ -76,18 +85,20 @@ public class RBMTrainer2 {
 
         setInitialValues(rbm, miniBatchCreator, random);
 
+
         for(long i=0;i<maxEpoch;i++) {
 
-            contrastiveDivergence.resetGradient();
             final Collection<TraningData> minibatch = miniBatchCreator.createMiniBatch();
+            contrastiveDivergence.resetGradient();
 
             for(TraningData data : minibatch) {
                 contrastiveDivergence.doIt(data.intput, numGibbsSamples, random);
             }
 
             float[] gradient = contrastiveDivergence.getGradient();
-            float[] weights = weightUpdate.update(gradient);
-            rbm.setWeights(weights);
+            weightUpdate.update(gradient);
+
+
 
             double error = calcError(rbm, minibatch);
             logger.info("epoch {} error: {}", i, error);

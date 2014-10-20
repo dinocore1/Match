@@ -5,55 +5,37 @@ import com.amd.aparapi.Kernel;
 
 public class WeightUpdate {
 
-    private static final int LEARNINGRATE = 0;
-    private static final int MOMENTUM = 1;
 
-    public final int size;
-    private final float[] weights;
-    private final float[] gradient;
-
-    private final float[] params = new float[2];
-    private final Kernel kernel = new UpdateKernel();
+    private final RBM2 rbm;
+    private final float[] lastWeights;
+    private float learningrate = 0.1f;
+    private float momentum = 0.1f;
 
 
-    public WeightUpdate(int size, float learningRate) {
-        this.size = size;
-        this.weights = new float[size];
-        this.gradient = new float[size];
-
-        params[LEARNINGRATE] = learningRate;
-        params[MOMENTUM] = 0.1f;
+    public WeightUpdate(RBM2 rbm, float learningRate) {
+        this.rbm = rbm;
+        this.lastWeights = new float[rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden];
     }
 
     public synchronized void setLearningrate(float learningrate) {
-        params[LEARNINGRATE] = learningrate;
-        kernel.put(params);
+        this.learningrate = learningrate;
     }
 
     public synchronized void setMomentum(float momentum) {
-        params[MOMENTUM] = momentum;
-        kernel.put(params);
+        this.momentum = momentum;
     }
 
     public synchronized float[] update(float[] gradientInput) {
-        assert gradientInput.length == gradient.length;
-        System.arraycopy(gradientInput, 0, gradient, 0, gradient.length);
+        assert gradientInput.length == lastWeights.length;
 
+        final float[] weights = rbm.getWeights();
 
-        kernel.put(gradient);
-        kernel.execute(size);
-        kernel.get(weights);
+        for(int i=0;i<lastWeights.length;i++){
+            weights[i] += learningrate * (gradientInput[i] + momentum*lastWeights[i]);
+        }
+
+        rbm.setWeights(weights);
         return weights;
     }
 
-    class UpdateKernel extends Kernel {
-
-        @Override
-        public void run() {
-            final int gid = getGlobalId();
-
-            weights[gid] += params[LEARNINGRATE] * (gradient[gid] + params[MOMENTUM]*weights[gid]);
-
-        }
-    }
 }

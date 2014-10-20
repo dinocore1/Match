@@ -7,29 +7,12 @@ import java.util.Random;
 
 public class ContrastiveDivergence2 {
 
-    private static final int MINIBATCHCOEFF = 0;
-
     private final RBM2 rbm;
-
-    private float[] positiveVisible;
-    private float[] negitiveVisible;
-
-    private float[] positiveHidden;
-    private float[] negitiveHidden;
-    private float[] gradient;
-    private float[] params = new float[1];
-    private final CDKernel kernel = new CDKernel();
+    private final CDKernel kernel;
 
     public ContrastiveDivergence2(RBM2 rbm){
         this.rbm = rbm;
-        positiveVisible = new float[rbm.numVisible];
-        negitiveVisible = new float[rbm.numVisible];
-        positiveHidden = new float[rbm.numHidden];
-        negitiveHidden = new float[rbm.numHidden];
-
-        gradient = new float[rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden];
-
-        params[MINIBATCHCOEFF] = 1.0f;
+        this.kernel = new CDKernel(rbm);
         kernel.setExplicit(true);
     }
 
@@ -40,22 +23,17 @@ public class ContrastiveDivergence2 {
     }
 
     public void resetGradient() {
-        for(int i=0;i<gradient.length;i++){
-            gradient[i] = 0;
+        for(int i=0;i<kernel.gradient.length;i++){
+            kernel.gradient[i] = 0;
         }
-        kernel.put(gradient);
-    }
-
-    public void setMinibatchSize(int size) {
-        params[MINIBATCHCOEFF] = 1f / (float)size;
-        kernel.put(params);
+        kernel.put(kernel.gradient);
     }
 
     public void doIt(double[] visibleInput, int numGibbsSamples, Random r) {
         assert visibleInput.length == rbm.numVisible;
 
         for(int i=0;i<rbm.numVisible;i++) {
-            positiveVisible[i] = (float)visibleInput[i];
+            kernel.positiveVisible[i] = (float)visibleInput[i];
         }
 
         doIt(numGibbsSamples, r);
@@ -64,58 +42,81 @@ public class ContrastiveDivergence2 {
     public void doIt(float[] visibleInput, int numGibbsSamples, Random r) {
         assert visibleInput.length == rbm.numVisible;
 
-        System.arraycopy(visibleInput,0, positiveVisible, 0, rbm.numVisible);
+        System.arraycopy(visibleInput,0, kernel.positiveVisible, 0, rbm.numVisible);
 
         doIt(numGibbsSamples, r);
     }
 
     public void doIt(int numGibbsSamples, Random r) {
 
-        float[] values = positiveVisible;
+        float[] values = kernel.positiveVisible;
 
         for(int i=0;i<numGibbsSamples;i++){
             values = rbm.activateHidden(values);
             sampleVector(values, r);
 
             if(i==0) {
-                System.arraycopy(values, 0, positiveHidden, 0, rbm.numHidden);
+                System.arraycopy(values, 0, kernel.positiveHidden, 0, rbm.numHidden);
             }
 
             values = rbm.activateVisible(values);
         }
 
-        System.arraycopy(values, 0, negitiveVisible,0, rbm.numVisible);
+        System.arraycopy(values, 0, kernel.negitiveVisible,0, rbm.numVisible);
 
         values = rbm.activateHidden(values);
         sampleVector(values, r);
-        System.arraycopy(values, 0, negitiveHidden, 0, rbm.numHidden);
+        System.arraycopy(values, 0, kernel.negitiveHidden, 0, rbm.numHidden);
 
 
-        kernel.put(positiveVisible);
-        kernel.put(positiveHidden);
-        kernel.put(negitiveVisible);
-        kernel.put(negitiveHidden);
+        kernel.put(kernel.positiveVisible);
+        kernel.put(kernel.positiveHidden);
+        kernel.put(kernel.negitiveVisible);
+        kernel.put(kernel.negitiveHidden);
+        kernel.put(kernel.gradient);
 
         kernel.execute(rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden);
+        kernel.get(kernel.gradient);
     }
 
     public float[] getGradient() {
-        kernel.get(gradient);
-        return gradient;
+        kernel.get(kernel.gradient);
+        return kernel.gradient;
     }
 
-    class CDKernel extends Kernel {
+    static class CDKernel extends Kernel {
+
+        private final float[] positiveVisible;
+        private final float[] negitiveVisible;
+
+        private final float[] positiveHidden;
+        private final float[] negitiveHidden;
+        private final float[] gradient;
+
+        final int numVisible;
+        final int numHidden;
+
+        public CDKernel(RBM2 rbm) {
+            numVisible = rbm.numVisible;
+            numHidden = rbm.numHidden;
+
+            positiveVisible = new float[rbm.numVisible];
+            negitiveVisible = new float[rbm.numVisible];
+            positiveHidden = new float[rbm.numHidden];
+            negitiveHidden = new float[rbm.numHidden];
+            gradient = new float[rbm.numVisible*rbm.numHidden+rbm.numVisible+rbm.numHidden];
+        }
 
         @Override
         public void run() {
             final int gid = getGlobalId();
 
-            if(gid < rbm.numVisible*rbm.numHidden) {
-                gradient[gid] += params[MINIBATCHCOEFF] * (positiveVisible[gid/rbm.numVisible]*positiveHidden[gid%rbm.numHidden] - negitiveVisible[gid/rbm.numVisible]*negitiveHidden[gid%rbm.numHidden]);
-            } else if(gid < (rbm.numVisible*rbm.numHidden+rbm.numHidden)) {
-                gradient[gid] += params[MINIBATCHCOEFF] * ( positiveHidden[gid - rbm.numVisible*rbm.numHidden] - negitiveHidden[gid - rbm.numVisible*rbm.numHidden] );
+            if(gid < numVisible*numHidden) {
+                gradient[gid] += (positiveVisible[gid%numVisible]*positiveHidden[gid/numVisible] - negitiveVisible[gid%numVisible]*negitiveHidden[gid/numVisible]);
+            } else if(gid < (numVisible*numHidden+numHidden)) {
+                gradient[gid] += ( positiveHidden[gid - numVisible*numHidden] - negitiveHidden[gid - numVisible*numHidden] );
             } else {
-                gradient[gid] += params[MINIBATCHCOEFF] * ( positiveVisible[gid - (rbm.numVisible*rbm.numHidden+rbm.numHidden)] - negitiveVisible[gid - (rbm.numVisible*rbm.numHidden+rbm.numHidden)] );
+                gradient[gid] += ( positiveVisible[gid - (numVisible*numHidden+numHidden)] - negitiveVisible[gid - (numVisible*numHidden+numHidden)] );
             }
 
         }
