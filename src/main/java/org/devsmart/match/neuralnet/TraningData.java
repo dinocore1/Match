@@ -3,8 +3,8 @@ package org.devsmart.match.neuralnet;
 
 public class TraningData {
 
-    double[] intput;
-    double[] output;
+    public double[] intput;
+    public double[] output;
 
     public TraningData() {
 

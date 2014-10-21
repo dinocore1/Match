@@ -2,6 +2,7 @@ package org.devsmart.match.neuralnet;
 
 
 import com.google.common.base.Throwables;
+
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.devsmart.match.rbm.nuron.Neuron;
@@ -17,7 +18,7 @@ import java.util.concurrent.Future;
 
 public class Backpropagation {
 
-    public ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+    private ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     public NeuralNet neuralNet;
     public MiniBatchCreator miniBatchCreator;
     public double learningRate;

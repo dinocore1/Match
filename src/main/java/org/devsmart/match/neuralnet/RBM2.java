@@ -6,6 +6,12 @@ import com.amd.aparapi.Kernel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 public class RBM2 {
 
     Logger logger = LoggerFactory.getLogger(RBM2.class);
@@ -62,6 +68,27 @@ public class RBM2 {
 
     public int getVisibleBias(int i) {
         return getVisibleBias(numVisible, numHidden, i);
+    }
+
+    public synchronized void save(OutputStream out) throws IOException {
+        DataOutputStream dout = new DataOutputStream(out);
+        dout.writeInt(numVisible);
+        dout.writeInt(numHidden);
+        for(int i=0;i<weights.length;i++){
+            dout.writeFloat(weights[i]);
+        }
+        dout.flush();
+    }
+
+    public static RBM2 load(InputStream in) throws IOException {
+        DataInputStream din = new DataInputStream(in);
+        int numVisible = din.readInt();
+        int numHidden = din.readInt();
+        RBM2 retval = new RBM2(numVisible, numHidden);
+        for(int i=0;i<retval.weights.length;i++){
+            retval.weights[i] = din.readFloat();
+        }
+        return retval;
     }
 
     public synchronized float[] activateHidden(double[] visibleInput) {

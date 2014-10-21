@@ -8,7 +8,12 @@ public class SoftPlus implements Neuron {
 
     @Override
     public double value(double input) {
-        return FastMath.log(1 + FastMath.exp(input));
+        final double exp = FastMath.exp(input);
+        if(Double.isInfinite(exp)){
+            return input;
+        } else {
+            return FastMath.log(1 + exp);
+        }
     }
 
     @Override
