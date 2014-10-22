@@ -5,7 +5,10 @@ import com.google.common.base.Throwables;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.devsmart.match.rbm.nuron.Neuron;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,15 +21,35 @@ import java.util.concurrent.Future;
 
 public class Backpropagation {
 
+    Logger logger = LoggerFactory.getLogger(Backpropagation.class);
+
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     public NeuralNet neuralNet;
     public MiniBatchCreator miniBatchCreator;
     public double learningRate;
     public double momentum = 0;
 
+    private double calcError(Collection<TraningData> miniBatch) {
+        SummaryStatistics error = new SummaryStatistics();
+
+        for(TraningData data : miniBatch) {
+            double[] outputs = neuralNet.setInputs(data.intput).getOutputs();
+            for(int i=0;i<outputs.length;i++){
+                error.addValue(Math.abs(outputs[i]-data.output[i]));
+            }
+        }
+
+        return error.getMean();
+    }
+
     public void train(double minError, long maxEpoc) {
 
         try {
+
+
+            //calc error
+            double error = calcError(miniBatchCreator.createMiniBatch());
+            logger.info("epoch {} error: {}", 0, error);
 
             RealVector last = new ArrayRealVector(neuralNet.synapses.length);
 
@@ -53,6 +76,10 @@ public class Backpropagation {
                 for (int i = 0; i < update.getDimension(); i++) {
                     neuralNet.synapses[i].weight -= update.getEntry(i);
                 }
+
+                //calc error
+                error = calcError(miniBatch);
+                logger.info("epoch {} error: {}", epoc+1, error);
 
             }
 
