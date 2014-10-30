@@ -29,6 +29,14 @@ public class RBMTrainer2 {
 
     }
 
+    public void setLearningRate(float learningRate) {
+        weightUpdate.setLearningrate(learningRate);
+    }
+
+    public void setMomentum(float momentum) {
+        weightUpdate.setMomentum(momentum);
+    }
+
     public static void setInitialValues(RBM2 rbm, MiniBatchCreator miniBatchCreator, Random r) {
 
         float[] weights = new float[rbm.numHidden*rbm.numVisible+rbm.numHidden+rbm.numVisible];
@@ -50,15 +58,15 @@ public class RBMTrainer2 {
         }
 
         for(int i=0;i<rbm.numHidden;i++){
-            weights[rbm.getHiddenBias(i)] = -4;
+            //weights[rbm.getHiddenBias(i)] = -4;
         }
 
         for(int i=0;i<rbm.numVisible;i++){
             double mean = trainStats[i].getMean();
-            mean = Math.max(0.0001, mean);
-            mean = Math.min(0.9999, mean);
+            mean = Math.max(0.1, mean);
+            mean = Math.min(0.9, mean);
             float value = (float) FastMath.log(mean / (1 - mean));
-            weights[rbm.numVisible*rbm.numHidden+rbm.numHidden+i] = value;
+            weights[rbm.getVisibleBias(i)] = value;
         }
 
         rbm.setWeights(weights);

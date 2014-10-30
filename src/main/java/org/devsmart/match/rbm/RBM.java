@@ -7,10 +7,12 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.FastMath;
 import org.devsmart.match.rbm.nuron.Neuron;
+import org.devsmart.match.rbm.nuron.SigmoidNuron;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
@@ -57,10 +59,13 @@ public class RBM {
         for(int i=0;i<b.getDimension();i++){
             dout.writeDouble(b.getEntry(i));
         }
+
+
         dout.flush();
     }
 
-    public static RBM load(DataInputStream din) throws IOException {
+    public static RBM load(InputStream in) throws IOException {
+        DataInputStream din = new DataInputStream(in);
         final int visible = din.readInt();
         final int hidden = din.readInt();
 
@@ -77,13 +82,16 @@ public class RBM {
         for(int i=0;i<visible;i++){
             double value = din.readDouble();
             retval.a.setEntry(i, value);
+            retval.visible[i] = new SigmoidNuron();
         }
 
         retval.b = new ArrayRealVector(hidden);
         for(int i=0;i<hidden;i++){
             double value = din.readDouble();
             retval.b.setEntry(i, value);
+            retval.hidden[i] = new SigmoidNuron();
         }
+
 
 
         return retval;

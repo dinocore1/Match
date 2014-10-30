@@ -56,7 +56,7 @@ public class NeuralNetworkBuilder {
         mNeuralNet = new NeuralNet();
 
         mNeuralNet.inputLayer = new Neuron[mInputs.numNeurons];
-        ArrayList<Neuron> lastLayer = new ArrayList<>(mInputs.numNeurons);
+        ArrayList<Neuron> lastLayer = new ArrayList<Neuron>(mInputs.numNeurons);
         for(int i=0;i<mInputs.numNeurons;i++){
             mNeuralNet.inputLayer[i] = createNeuron(mInputs.classType);
             allNeurons.add(mNeuralNet.inputLayer[i]);
@@ -71,7 +71,7 @@ public class NeuralNetworkBuilder {
 
         for(Layer layer : mLayers) {
 
-            ArrayList<Neuron> neurons = new ArrayList<>(layer.numNeurons);
+            ArrayList<Neuron> neurons = new ArrayList<Neuron>(layer.numNeurons);
             for(int i=0;i<layer.numNeurons;i++){
                 Neuron n = createNeuron(layer.classType);
                 allNeurons.add(n);

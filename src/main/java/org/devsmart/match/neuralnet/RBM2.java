@@ -74,8 +74,16 @@ public class RBM2 {
         DataOutputStream dout = new DataOutputStream(out);
         dout.writeInt(numVisible);
         dout.writeInt(numHidden);
-        for(int i=0;i<weights.length;i++){
-            dout.writeFloat(weights[i]);
+        for(int i=0;i<numVisible;i++){
+            for(int j=0;j<numHidden;j++) {
+                dout.writeDouble(weights[getWeight(i, j)]);
+            }
+        }
+        for(int i=0;i<numVisible;i++){
+            dout.writeDouble(weights[getVisibleBias(i)]);
+        }
+        for(int j=0;j<numHidden;j++){
+            dout.writeDouble(weights[getHiddenBias(j)]);
         }
         dout.flush();
     }
@@ -85,8 +93,16 @@ public class RBM2 {
         int numVisible = din.readInt();
         int numHidden = din.readInt();
         RBM2 retval = new RBM2(numVisible, numHidden);
-        for(int i=0;i<retval.weights.length;i++){
-            retval.weights[i] = din.readFloat();
+        for(int i=0;i<numVisible;i++){
+            for(int j=0;j<numHidden;j++) {
+                retval.weights[retval.getWeight(i, j)] = (float)din.readDouble();
+            }
+        }
+        for(int i=0;i<numVisible;i++){
+            retval.weights[retval.getVisibleBias(i)] = (float)din.readDouble();
+        }
+        for(int j=0;j<numHidden;j++){
+            retval.weights[retval.getHiddenBias(j)] = (float)din.readDouble();
         }
         return retval;
     }
