@@ -6,23 +6,26 @@ import com.google.common.base.Throwables;
 import org.devsmart.match.rbm.nuron.Bias;
 import org.devsmart.match.rbm.nuron.Neuron;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class FreeFormNNBuilder {
 
     private NeuralNet mNeuralNet = new NeuralNet();
+    private ArrayList<Layer> mLayers = new ArrayList<Layer>();
     private LinkedList<Synapse> mSynapses = new LinkedList<Synapse>();
-    LinkedList<Neuron> allNeurons = new LinkedList<Neuron>();
+
     public Random random = new Random();
 
     public Neuron[] createLayer(int numNeurons, Class<? extends Neuron> classType) {
-        Neuron[] retval = new Neuron[numNeurons];
+        Layer l = new Layer();
+        l.neurons = new Neuron[numNeurons];
         for(int i=0;i<numNeurons;i++){
-            retval[i] = createNeuron(classType);
-            allNeurons.add(retval[i]);
+            l.neurons[i] = createNeuron(classType);
         }
-        return retval;
+        mLayers.add(l);
+        return l.neurons;
     }
 
 
@@ -43,7 +46,6 @@ public class FreeFormNNBuilder {
 
     public void addBias(Neuron n) {
         Bias b = new Bias();
-        allNeurons.add(b);
         addConnection(b, n, 1);
     }
 
@@ -64,17 +66,9 @@ public class FreeFormNNBuilder {
         }
     }
 
-    public void setInputs(Neuron[] inputLayer) {
-        mNeuralNet.inputLayer = inputLayer;
-    }
-
-    public void setOutputs(Neuron[] outputLayer) {
-        mNeuralNet.outputLayer = outputLayer;
-    }
-
     public NeuralNet build() {
+        mNeuralNet.layers = mLayers.toArray(new Layer[mLayers.size()]);
         mNeuralNet.synapses = mSynapses.toArray(new Synapse[mSynapses.size()]);
-        mNeuralNet.neurons = allNeurons.toArray(new Neuron[allNeurons.size()]);
         return mNeuralNet;
     }
 }

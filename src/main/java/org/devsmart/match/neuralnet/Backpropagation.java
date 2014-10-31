@@ -77,9 +77,11 @@ public class Backpropagation {
                     neuralNet.synapses[i].weight -= update.getEntry(i);
                 }
 
-                //calc error
-                error = calcError(miniBatch);
-                logger.info("epoch {} error: {}", epoc+1, error);
+                if(epoc % 100 == 0) {
+                    //calc error
+                    error = calcError(miniBatch);
+                    logger.info("epoch {} error: {}", epoc + 1, error);
+                }
 
             }
 
@@ -103,8 +105,9 @@ public class Backpropagation {
 
             LinkedHashSet<Neuron> next = new LinkedHashSet<Neuron>();
 
-            for (int i = 0; i < neuralNet.outputLayer.length; i++) {
-                Neuron n = neuralNet.outputLayer[i];
+            Neuron[] outputLayer = neuralNet.getOutputLayer();
+            for (int i = 0; i < outputLayer.length; i++) {
+                Neuron n = outputLayer[i];
                 NeuralNet.NeuronState state = context.states.get(n);
                 state.error = n.derivative(state.input) * (state.output - example.output[i]);
 

@@ -136,17 +136,17 @@ public class RBMTrainer {
             errorStats.addValue(error);
             final double meanError = errorStats.getMean();
             final double stddivError = errorStats.getStandardDeviation();
-            if(i % 10 == 0){
-                logger.info("epoc: {} avg error: {} 3*stddiv error: {}", i, meanError, 3*stddivError);
+            if(i % 1 == 0){
+                logger.info("epoc: {} avg error: {} 3*stddiv error: {}", i+1, meanError, 3*stddivError);
             }
             if(maxError != null && meanError < maxError){
-                logger.info("converged on epoc: {}. mean error: {}", i, meanError);
+                logger.info("converged on epoc: {}. mean error: {}", i+1, meanError);
                 break;
             }
 
             if(3*stddivError <= sigmaErrorDiff && errorStats.getN() >= errorWindow) {
                 //converged
-                logger.info("converged on epoc: {}. mean error: {}", i, meanError);
+                logger.info("converged on epoc: {}. mean error: {}", i+1, meanError);
                 break;
             }
 

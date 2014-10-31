@@ -2,6 +2,7 @@ package org.devsmart.match.neuralnet;
 
 
 import org.devsmart.match.rbm.nuron.LinearNuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -52,11 +53,17 @@ public class XORTest {
     @Test
     public void testXOR() {
 
-        NeuralNet neuralNet = new NeuralNetworkBuilder()
-                .withInputs(2, LinearNuron.class)
-                .addHiddenLayer(2, SigmoidNuron.class)
-                .withOutputs(1, LinearNuron.class)
-                .build();
+        FreeFormNNBuilder builder = new FreeFormNNBuilder();
+        Neuron[] inputs = builder.createLayer(2, LinearNuron.class);
+        Neuron[] hidden = builder.createLayer(2, SigmoidNuron.class);
+        builder.addBias(hidden);
+        builder.fullyConnect(inputs, hidden);
+        Neuron[] outputs = builder.createLayer(1, LinearNuron.class);
+        builder.fullyConnect(hidden, outputs);
+        builder.addBias(outputs);
+
+
+        NeuralNet neuralNet = builder.build();
 
         MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
             @Override

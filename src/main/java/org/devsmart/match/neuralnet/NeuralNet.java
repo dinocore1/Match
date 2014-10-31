@@ -25,7 +25,13 @@ public class NeuralNet {
 
         HashMap<Neuron, NeuronState> states = new HashMap<Neuron, NeuronState>();
 
-        public Context(double[] inputs) {
+        public Context(double[] inputsValues) {
+
+            HashSet<Neuron> neurons = new HashSet<Neuron>();
+            for(Synapse s : synapses){
+                neurons.add(s.from);
+                neurons.add(s.to);
+            }
 
             for(Neuron n : neurons){
                 NeuronState s = new NeuronState(n);
@@ -35,44 +41,34 @@ public class NeuralNet {
                 states.put(n, s);
             }
 
-
-            Set<Neuron> next = new HashSet<Neuron>();
-            for(int i=0;i<inputLayer.length;i++) {
-                NeuronState state = states.get(inputLayer[i]);
-                state.output = inputs[i];
-
-                for(Synapse s : outputs.get(inputLayer[i])){
-                    next.add(s.to);
-                }
-            }
-
-            while(!next.isEmpty()){
-                next = feedForward(next);
-            }
-
-        }
-
-        private Set<Neuron> feedForward(Iterable<Neuron> neurons) {
-            Set<Neuron> next = new HashSet<Neuron>();
-            for(Neuron n : neurons) {
+            for(int i=0;i<layers[0].neurons.length;i++){
+                Neuron n = layers[0].neurons[i];
                 NeuronState state = states.get(n);
-                assert state.input == 0;
-                for(Synapse s : inputs.get(n)){
-                    state.input += states.get(s.from).output * s.weight;
-                }
-                state.output = n.value(state.input);
+                state.output = inputsValues[i];
+            }
 
-                for(Synapse s : outputs.get(n)){
-                    next.add(s.to);
+            for(int l=1;l<layers.length;l++){
+                for(Neuron n : layers[l].neurons){
+                    NeuronState state = states.get(n);
+
+                    for(Synapse s : inputs.get(n)){
+                        state.input += states.get(s.from).output * s.weight;
+                    }
+
+                    state.output = n.value(state.input);
+
                 }
             }
-            return next;
+
+
+
+
         }
 
         public double[] getOutputs() {
-            double[] retval = new double[outputLayer.length];
+            double[] retval = new double[layers[layers.length-1].neurons.length];
             for(int i=0;i<retval.length;i++) {
-                NeuronState s = states.get(outputLayer[i]);
+                NeuronState s = states.get(layers[layers.length-1].neurons[i]);
                 retval[i] = s.output;
             }
             return retval;
@@ -81,10 +77,9 @@ public class NeuralNet {
 
     }
 
-    Neuron[] inputLayer;
-    Neuron[] outputLayer;
+
+    Layer[] layers;
     Synapse[] synapses;
-    Neuron[] neurons;
 
     ListMultimap<Neuron, Synapse> inputs = LinkedListMultimap.create();
     ListMultimap<Neuron, Synapse> outputs = LinkedListMultimap.create();
@@ -100,10 +95,14 @@ public class NeuralNet {
     }
 
     public Context setInputs(double[] inputs) {
-        if(inputs == null || inputs.length != inputLayer.length){
+        if(inputs == null || inputs.length != layers[0].neurons.length){
             throw new IllegalArgumentException("number of inputs must match input layer");
         }
         return new Context(inputs);
+    }
+
+    public Neuron[] getOutputLayer() {
+        return layers[layers.length-1].neurons;
     }
 
 

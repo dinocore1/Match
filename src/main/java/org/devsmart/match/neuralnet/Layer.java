@@ -1,7 +1,7 @@
 package org.devsmart.match.neuralnet;
 
 
-import org.apache.commons.math3.ml.neuralnet.Neuron;
+import org.devsmart.match.rbm.nuron.Neuron;
 
 public class Layer {
 
