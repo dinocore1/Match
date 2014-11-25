@@ -3,6 +3,7 @@ package org.devsmart.match.neuralnet;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
+import org.devsmart.match.metric.FMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,8 +73,16 @@ public class RBMTrainer2 {
         rbm.setWeights(weights);
     }
 
-    public static double calcError(RBM2 rbm, Collection<TraningData> minibatch) {
+    public static void calcF1(FMeasure measure, double[] inputVisible, float[] reconstructVisible) {
+        assert inputVisible.length == reconstructVisible.length;
+        for(int i=0;i<inputVisible.length;i++){
+            measure.update(Math.round(inputVisible[i]) == 1, Math.round(reconstructVisible[i]) == 1);
+        }
+    }
 
+    public void calcError(long epoc, RBM2 rbm, Collection<TraningData> minibatch) {
+
+        FMeasure f1 = new FMeasure(1);
         SummaryStatistics error = new SummaryStatistics();
 
         for(TraningData data : minibatch) {
@@ -81,19 +90,24 @@ public class RBMTrainer2 {
             float[] values = rbm.activateHidden(data.intput);
             values = rbm.activateVisible(values);
 
+            calcF1(f1, data.intput, values);
+
             for(int i=0;i<values.length;i++){
                 error.addValue(Math.abs(data.intput[i] - values[i]));
             }
         }
 
-        return error.getMean();
+
+        double errorValue = error.getMean();
+
+        logger.info("epoch {} error: {} f1: {}", epoc, errorValue, f1.getValue());
     }
 
     public void train(final long maxEpoch) {
 
         setInitialValues(rbm, miniBatchCreator, random);
 
-
+        calcError(0, rbm, miniBatchCreator.createMiniBatch());
         for(long i=0;i<maxEpoch;i++) {
 
             final Collection<TraningData> minibatch = miniBatchCreator.createMiniBatch();
@@ -107,9 +121,7 @@ public class RBMTrainer2 {
             weightUpdate.update(gradient);
 
 
-
-            double error = calcError(rbm, minibatch);
-            logger.info("epoch {} error: {}", i, error);
+            calcError(i+1, rbm, minibatch);
 
         }
 
