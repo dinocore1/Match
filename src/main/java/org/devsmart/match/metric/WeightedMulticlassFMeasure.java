@@ -14,7 +14,7 @@ public class WeightedMulticlassFMeasure extends MulticlassFMeasure {
         double num = 0;
 
         for(FMeasure f : labelMap.values()) {
-            final double weight = f.truePositive;
+            final double weight = f.actualPositive;
             num += weight * f.getValue();
             total += weight;
         }

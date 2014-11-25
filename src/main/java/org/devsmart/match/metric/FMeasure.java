@@ -39,7 +39,11 @@ public class FMeasure {
         double recall = getRecallScore();
         double betaSquared = beta * beta;
 
-        return (1+betaSquared) * ((precision * recall) / (betaSquared*precision + recall));
+        if((betaSquared*precision + recall) == 0){
+            return 0;
+        } else {
+            return (1 + betaSquared) * ((precision * recall) / (betaSquared * precision + recall));
+        }
     }
 
     public void update(final boolean knownStandard, final boolean prediction) {
