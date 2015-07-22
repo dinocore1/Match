@@ -5,18 +5,20 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.util.MathUtils;
 
 public class PCA {
 
     private RealMatrix mMeans;
-    private RealMatrix mTransform;
+    private RealMatrix mEigenVectors;
+    private double[] mComponentProportions;
 
     public PCA() {
 
     }
 
     public PCA(RealMatrix transform, double[] means) {
-        mTransform = transform;
+        mEigenVectors = transform;
         mMeans = MatrixUtils.createRowRealMatrix(means);
     }
 
@@ -50,7 +52,29 @@ public class PCA {
 
 
         SingularValueDecomposition decomposition = new SingularValueDecomposition(observations);
-        mTransform = decomposition.getV();
+        double[] eigenValues = decomposition.getSingularValues();
+        for(int i=0;i<eigenValues.length;i++){
+            eigenValues[i] = eigenValues[i] * eigenValues[i];
+        }
+        mComponentProportions = new double[eigenValues.length];
+        mEigenVectors = decomposition.getV();
+
+        double sum = StatUtils.sum(eigenValues);
+
+
+        for(int i=0;i<eigenValues.length;i++) {
+            mComponentProportions[i] = eigenValues[i] / sum;
+        }
+
+    }
+
+    /**
+     * Component proportions are the percent of variance in the data set
+     * that is explained by the ith principal component. A number 0 - 1.0
+     * @return
+     */
+    public double[] getComponentProportions() {
+        return mComponentProportions;
     }
 
     /**
@@ -67,7 +91,7 @@ public class PCA {
             dataMatrix = dataMatrix.subtract(mMeans);
         }
 
-        RealMatrix retval = dataMatrix.multiply(mTransform);
+        RealMatrix retval = dataMatrix.multiply(mEigenVectors);
 
         return retval;
 
