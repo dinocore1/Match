@@ -1,28 +1,26 @@
 package org.devsmart.match;
 
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-
 public interface LossFunction {
 
     double loss(double[] x, double[] y);
 
-    public static final LossFunction SumOfSquares = new LossFunction() {
+    LossFunction Square = new LossFunction() {
 
         @Override
         public double loss(double[] x, double[] y) {
             if(x.length != y.length) {
                 throw new IllegalArgumentException("array sizes must be equal");
             }
-            SummaryStatistics error = new SummaryStatistics();
+            double retval = 0;
             for(int i=0;i<x.length;i++){
-                error.addValue(x[i] - y[i]);
+                retval += (x[i] - y[i]) * (x[i] - y[i]);
             }
-            return Math.sqrt( error.getSumsq() / error.getN() );
+            return -retval;
         }
     };
 
-    public static final LossFunction CrossEntropy = new LossFunction() {
+    LossFunction CrossEntropy = new LossFunction() {
         @Override
         public double loss(double[] x, double[] y) {
             if(x.length != y.length) {

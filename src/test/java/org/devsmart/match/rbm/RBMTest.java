@@ -1,6 +1,8 @@
 package org.devsmart.match.rbm;
 
 
+import org.devsmart.match.neuralnet.MiniBatchCreator;
+import org.devsmart.match.neuralnet.TraningData;
 import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.devsmart.match.rbm.nuron.Neuron;
 import org.devsmart.match.rbm.nuron.SoftPlus;
@@ -63,23 +65,23 @@ public class RBMTest {
 
         RBM rbm = new RBM(createBernoliiLayer(9), createBernoliiLayer(3));
 
-        final ArrayList<double[]> trainingData = new ArrayList<double[]>();
-        trainingData.add(new double[]{
+        final ArrayList<TraningData> trainingData = new ArrayList<TraningData>();
+        trainingData.add(new TraningData(new double[]{
                 0, 0, 0,
                 0, 0, 0,
-                1, 1, 1});
-        trainingData.add(new double[]{
+                1, 1, 1}));
+        trainingData.add(new TraningData(new double[]{
                 0, 0, 1,
                 0, 1, 0,
-                1, 0, 0});
-        trainingData.add(new double[]{
+                1, 0, 0}));
+        trainingData.add(new TraningData(new double[]{
                 1, 1, 1,
                 0, 0, 0,
-                0, 0, 0});
+                0, 0, 0}));
 
-        RBMMiniBatchCreator miniBatchCreator = new RBMMiniBatchCreator() {
+        MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
             @Override
-            public Collection<double[]> createMiniBatch() {
+            public Collection<TraningData> createMiniBatch() {
                 Collections.shuffle(trainingData);
                 return trainingData;
             }

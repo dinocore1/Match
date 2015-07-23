@@ -11,6 +11,8 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
 import org.devsmart.match.LossFunction;
 import org.devsmart.match.WeightDecay;
+import org.devsmart.match.neuralnet.MiniBatchCreator;
+import org.devsmart.match.neuralnet.TraningData;
 import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.devsmart.match.rbm.nuron.GaussianNuron;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -28,19 +31,21 @@ public class RBMTrainer {
 
     private static Logger logger = LoggerFactory.getLogger(RBMTrainer.class);
 
-    private final RBM rbm;
-    private final RBMMiniBatchCreator mMinibatchCreator;
+    public final RBM rbm;
+    public final MiniBatchCreator mMinibatchCreator;
     public Random random = new Random();
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    public LossFunction lossFunction = LossFunction.SumOfSquares;
+    public LossFunction lossFunction = LossFunction.Square;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
     public double momentum = 0.1;
     public double weightDecayCoefficient = 0.001;
     public WeightDecay weightDecayFunction = WeightDecay.L1;
+    public List<IterationListener> iterationListeners = new ArrayList<IterationListener>();
+    public Collection<TraningData> minibatch;
 
-    public RBMTrainer(RBM rbm, RBMMiniBatchCreator miniBatchCreator) {
+    public RBMTrainer(RBM rbm, MiniBatchCreator miniBatchCreator) {
         this.rbm = rbm;
         this.mMinibatchCreator = miniBatchCreator;
     }
@@ -50,7 +55,7 @@ public class RBMTrainer {
     }
 
 
-    public static void setInitialValues(RBM rbm, Collection<double[]> miniBatch, Random r) {
+    public static void setInitialValues(RBM rbm, Collection<TraningData> miniBatch, Random r) {
 
         //init weights zero-mean Gaussian with stddev of 0.01
         for(int i=0;i<rbm.visible.length;i++){
@@ -66,16 +71,16 @@ public class RBMTrainer {
             trainStats[i] = new SummaryStatistics();
         }
 
-        for(double[] training : miniBatch){
+        for(TraningData trainingData : miniBatch){
             for(int i=0;i<rbm.visible.length;i++){
-                trainStats[i].addValue(training[i]);
+                trainStats[i].addValue(trainingData.intput[i]);
             }
         }
 
         for(int i=0;i<rbm.visible.length;i++){
             if(rbm.visible[i] instanceof GaussianNuron){
-                double variance = trainStats[i].getVariance();
-                rbm.a.setEntry(i, trainStats[i].getMean() / variance);
+                //double variance = trainStats[i].getStandardDeviation();
+                rbm.a.setEntry(i, trainStats[i].getMean());
             } else if(rbm.visible[i] instanceof SigmoidNuron){
                 double mean = trainStats[i].getMean();
                 mean = Math.max(0.1, mean);
@@ -94,21 +99,12 @@ public class RBMTrainer {
         RealMatrix lastW = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
         RealVector lastA = new ArrayRealVector(rbm.a.getDimension());
         RealVector lastB = new ArrayRealVector(rbm.b.getDimension());
-        DescriptiveStatistics errorStats = new DescriptiveStatistics(errorWindow);
-
-        {
-            final double error = error(mMinibatchCreator.createMiniBatch());
-            errorStats.addValue(error);
-            final double meanError = errorStats.getMean();
-            final double stddivError = errorStats.getStandardDeviation();
-            logger.info("epoc: {} avg error: {} 3*stddiv error: {}", 0, meanError, 3 * stddivError);
-        }
 
         for(int i=0;i<maxEpoch;i++){
-            final Collection<double[]> minibatch = mMinibatchCreator.createMiniBatch();
+            minibatch = mMinibatchCreator.createMiniBatch();
             ArrayList<Future<ContrastiveDivergence>> tasks = new ArrayList<Future<ContrastiveDivergence>>(minibatch.size());
-            for(double[] trainingVisible : minibatch){
-                tasks.add(mExecutorService.submit(new TrainingTask(trainingVisible)));
+            for(TraningData trainingVisible : minibatch){
+                tasks.add(mExecutorService.submit(new TrainingTask(trainingVisible.intput)));
             }
 
             RealMatrix W = new Array2DRowRealMatrix(rbm.W.getRowDimension(), rbm.W.getColumnDimension());
@@ -132,24 +128,9 @@ public class RBMTrainer {
             lastA = a;
             lastB = b;
 
-            final double error = error(minibatch);
-            errorStats.addValue(error);
-            final double meanError = errorStats.getMean();
-            final double stddivError = errorStats.getStandardDeviation();
-            if(i % 1 == 0){
-                logger.info("epoc: {} avg error: {} 3*stddiv error: {}", i+1, meanError, 3*stddivError);
+            for(IterationListener listener : iterationListeners){
+                listener.iterationDone(this, i);
             }
-            if(maxError != null && meanError < maxError){
-                logger.info("converged on epoc: {}. mean error: {}", i+1, meanError);
-                break;
-            }
-
-            if(3*stddivError <= sigmaErrorDiff && errorStats.getN() >= errorWindow) {
-                //converged
-                logger.info("converged on epoc: {}. mean error: {}", i+1, meanError);
-                break;
-            }
-
 
         }
         stopwatch.stop();
@@ -176,12 +157,4 @@ public class RBMTrainer {
         }
     }
 
-    public double error(final Collection<double[]> minibatch) {
-        SummaryStatistics errorStats = new SummaryStatistics();
-        for(double[] data : minibatch){
-            double[] reconstruct = rbm.activateVisible(rbm.activateHidden(data));
-            errorStats.addValue(lossFunction.loss(data, reconstruct));
-        }
-        return Math.sqrt( errorStats.getSumsq() / errorStats.getN() );
-    }
 }

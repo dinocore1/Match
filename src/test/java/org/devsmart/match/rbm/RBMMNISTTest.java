@@ -2,6 +2,8 @@ package org.devsmart.match.rbm;
 
 
 import org.devsmart.match.data.MNISTImageFile;
+import org.devsmart.match.neuralnet.MiniBatchCreator;
+import org.devsmart.match.neuralnet.TraningData;
 import org.devsmart.match.rbm.nuron.SigmoidNuron;
 import org.devsmart.match.rbm.nuron.Neuron;
 import org.devsmart.match.rbm.nuron.SoftPlus;
@@ -51,21 +53,21 @@ public class RBMMNISTTest {
         for(int i=0;i<numSamples;i++){
             images.add(i);
         }
-        final RBMMiniBatchCreator miniBatchCreator = new RBMMiniBatchCreator() {
+        final MiniBatchCreator miniBatchCreator = new MiniBatchCreator() {
 
             final int batchSize = 100;
 
             @Override
-            public Collection<double[]> createMiniBatch() {
+            public Collection<TraningData> createMiniBatch() {
                 try {
                     Collections.shuffle(images, r);
-                    ArrayList<double[]> retval = new ArrayList<double[]>(batchSize);
+                    ArrayList<TraningData> retval = new ArrayList<TraningData>(batchSize);
                     for (int i = 0; i < batchSize; i++) {
                         double[] rawPixData = imageFile.getImage(images.get(i));
                         for(int q=0;q<rawPixData.length;q++){
                             rawPixData[q] = rawPixData[q] > 0.3 ? 1.0 : 0.0;
                         }
-                        retval.add(rawPixData);
+                        retval.add(new TraningData(rawPixData));
                     }
                     return retval;
                 } catch (IOException e) {

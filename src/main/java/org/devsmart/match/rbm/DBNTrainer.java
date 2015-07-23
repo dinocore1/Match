@@ -1,6 +1,8 @@
 package org.devsmart.match.rbm;
 
 import org.devsmart.match.LossFunction;
+import org.devsmart.match.neuralnet.MiniBatchCreator;
+import org.devsmart.match.neuralnet.TraningData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,7 @@ public class DBNTrainer {
     private final DBN dbn;
     public int numGibbsSteps = 1;
     public double learningRate = 0.1;
-    public LossFunction lossFunction = LossFunction.SumOfSquares;
+    public LossFunction lossFunction = LossFunction.Square;
     public Random random = new Random();
     public double momentum = 0.9;
     public double weightDecayCoefficient = 0.0001;
@@ -35,13 +37,13 @@ public class DBNTrainer {
             RBM rbm = dbn.mRBMs.get(layer);
 
             final int currentLayer = layer;
-            RBMTrainer trainer = new RBMTrainer(rbm, new RBMMiniBatchCreator() {
+            RBMTrainer trainer = new RBMTrainer(rbm, new MiniBatchCreator() {
                 @Override
-                public Collection<double[]> createMiniBatch() {
+                public Collection<TraningData> createMiniBatch() {
                     Collection<double[][]> dbnminibatch = mMinibachCreator.createMinibatch();
-                    ArrayList<double[]> minibatch = new ArrayList<double[]>(dbnminibatch.size());
+                    ArrayList<TraningData> minibatch = new ArrayList<TraningData>(dbnminibatch.size());
                     for(double[][] trainingdata : dbnminibatch) {
-                        minibatch.add(dbn.propagateUp(currentLayer, trainingdata, random));
+                        minibatch.add(new TraningData(dbn.propagateUp(currentLayer, trainingdata, random)));
                     }
                     return minibatch;
                 }
