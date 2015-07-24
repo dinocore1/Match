@@ -9,7 +9,7 @@ public class Evaluation<T extends Comparable<T>> {
 
     private ConfusionMatrix<T> mConfusionMatrix = new ConfusionMatrix<T>();
     //private Counter<T> mTruePositives = new Counter<T>();
-    //private Counter<T> mTrueNegitives = new Counter<T>();
+    private Counter<T> mTrueNegitives = new Counter<T>();
     //private Counter<T> mFalseNegitives = new Counter<T>();
     //private Counter<T> mFalsePositives = new Counter<T>();
     private HashSet<T> mClassSet = new HashSet<T>();
@@ -59,7 +59,7 @@ public class Evaluation<T extends Comparable<T>> {
     }
 
     public double getRecall(T clazz) {
-        return getSensitivity();
+        return getSensitivity(clazz);
     }
 
     /**
@@ -109,21 +109,15 @@ public class Evaluation<T extends Comparable<T>> {
     }
 
     public double getAccuracy(T clazz) {
-        final double t = getTruePositive(clazz) + getTrueNegitive(clazz);
-        final double population = t + getPositives(clazz) + getNegitive(clazz);
+        final double t = getTruePositive(clazz);
+        final double population = mTotalCount;
 
         return  t / population;
     }
 
     public double getAccuracy() {
-        Mean mean = new Mean();
-        for(T clazz : mClassSet) {
-            double a = getAccuracy(clazz);
-            if(!Double.isNaN(a)) {
-                mean.increment(a);
-            }
-        }
-        return mean.getResult();
+        final double tp = mConfusionMatrix.getTruePositives();
+        return tp / mTotalCount;
     }
 
     public long getTruePositive(T clazz) {
@@ -172,15 +166,15 @@ public class Evaluation<T extends Comparable<T>> {
         }
 
         if(expectedValue.equals(prediction)) {
-            mTruePositives.increment(expectedValue);
-            for(T clazz : mTruePositives.getAllClasses()) {
+            //mTruePositives.increment(expectedValue);
+            for(T clazz : mClassSet) {
                 if(!clazz.equals(prediction)) {
                     mTrueNegitives.increment(clazz);
                 }
             }
         } else {
-            mFalsePositives.increment(prediction);
-            mFalseNegitives.increment(expectedValue);
+            //mFalsePositives.increment(prediction);
+            //mFalseNegitives.increment(expectedValue);
         }
 
         mTotalCount++;
@@ -194,8 +188,8 @@ public class Evaluation<T extends Comparable<T>> {
         buff.append(String.format("Acc = %.6f\n", getAccuracy()));
         buff.append('\n');
 
-        for(T clazz : mTruePositives.getAllClasses()) {
-            buff.append(String.format("%s predicted %d times\n", clazz, mTruePositives.getCount(clazz)));
+        for(T clazz : mClassSet) {
+            buff.append(String.format("%s predicted %d times\n", clazz, mConfusionMatrix.getTruePositive(clazz)));
         }
 
         return buff.toString();

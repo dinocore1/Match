@@ -101,6 +101,15 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         return getCount(clazz, clazz);
     }
 
+    public long getTruePositives() {
+        long count = 0;
+        for(T c : mAllClasses) {
+            count += getTruePositive(c);
+        }
+        return count;
+    }
+
+
     /**
      * Return the number of times that {@code clazz} was incorrectly
      * predicted.
