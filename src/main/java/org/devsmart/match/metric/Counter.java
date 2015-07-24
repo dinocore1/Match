@@ -59,4 +59,30 @@ public class Counter<T> {
         }
     }
 
+    public long getMaxCount() {
+        long max = 0;
+        for(int i=0;i<mSlotsUsed;i++){
+            max = Math.max(max, mCounts[i]);
+        }
+        return max;
+    }
+
+    public void set(T clazz, long count) {
+        Integer slot = mIndexMap.get(clazz);
+        if(slot == null) {
+            ensureCapacity(mSlotsUsed + 1);
+            slot = mSlotsUsed;
+            mIndexMap.put(clazz, slot);
+            mSlotsUsed++;
+        }
+        mCounts[slot] = count;
+        calculateTotal();
+    }
+
+    private void calculateTotal() {
+        mTotal = 0;
+        for(int i=0;i<mSlotsUsed;i++){
+            mTotal += mCounts[i];
+        }
+    }
 }

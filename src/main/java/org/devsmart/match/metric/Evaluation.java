@@ -19,13 +19,8 @@ public class Evaluation<T> {
         final double tp = getTruePositive();
         final double fp = getFalsePositives();
 
-        final double pt = tp + fp;
-
-        if(pt == 0) {
-            return 0;
-        } else {
-            return tp / pt;
-        }
+        final double at = tp + fp;
+        return tp / at;
     }
 
     /**
@@ -40,11 +35,7 @@ public class Evaluation<T> {
         final double fn = getFalseNegitive();
 
         final double t = tp + fn;
-        if(t == 0) {
-            return 0;
-        } else {
-            return tp / t;
-        }
+        return tp / t;
     }
 
     /**
@@ -66,13 +57,10 @@ public class Evaluation<T> {
     }
 
     public double getAccuracy() {
-        if(mTotalCount == 0) {
-            return 0;
-        } else {
-            final double tp = getTruePositive();
+        final double t = getTruePositive() + getTrueNegitive();
+        final double population = mTotalCount;
 
-            return  tp / mTotalCount;
-        }
+        return  t / population;
     }
 
     public long getTruePositive() {
@@ -109,9 +97,12 @@ public class Evaluation<T> {
     public void update(final T expectedValue, final T prediction) {
 
         if(expectedValue.equals(prediction)) {
-            mTruePositives.increment(prediction);
+            mTruePositives.increment(expectedValue);
+            if(!mTrueNegitives.getAllClasses().contains(prediction)) {
+                mTrueNegitives.set(prediction, mTrueNegitives.getMaxCount());
+            }
             for(T clazz : mTruePositives.getAllClasses()) {
-                if(!clazz.equals(expectedValue)) {
+                if(!clazz.equals(prediction)) {
                     mTrueNegitives.increment(clazz);
                 }
             }

@@ -8,32 +8,22 @@ public class EvalTest {
 
     @Test
     public void testEval() {
-        Evaluation<Boolean> eval = new Evaluation<Boolean>();
 
-        String summary = eval.getSummaryTxt();
+        int[] gold = new int[] {0, 1, 2, 0, 1, 2};
+        int[] pred = new int[] {0, 2, 1, 0, 0, 1};
 
-        eval.update(true, true);
-        summary = eval.getSummaryTxt();
-        assertEquals(1.0, eval.getAccuracy(), 0.00001);
-        assertEquals(1, eval.getTruePositive());
-        assertEquals(0, eval.getTrueNegitive());
-        assertEquals(0, eval.getFalseNegitive());
-        assertEquals(0, eval.getFalsePositives());
+        Evaluation<Integer> eval = new Evaluation<Integer>();
 
-        eval.update(true, false);
-        summary = eval.getSummaryTxt();
-        assertEquals(0.5, eval.getAccuracy(), 0.00001);
+        for(int i=0;i<gold.length;i++){
+            eval.update(gold[i], pred[i]);
 
-        eval.update(false, false);
-        summary = eval.getSummaryTxt();
-        assertEquals(2, eval.getTruePositive());
-        assertEquals(0.66666, eval.getAccuracy(), 0.001);
+        }
 
-        eval.update(false, false);
-        eval.update(false, false);
-        eval.update(false, false);
-        eval.update(true, false);
-        summary = eval.getSummaryTxt();
+        System.out.println(eval.getSummaryTxt());
+
+
+        assertEquals( 2d/6d, eval.getAccuracy(), 0.001);
+        assertEquals( 0.3333, eval.getF1Score(), 0.001);
 
 
 
