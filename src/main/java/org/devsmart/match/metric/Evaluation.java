@@ -102,7 +102,7 @@ public class Evaluation<T> {
 
         double betaSquare = beta * beta;
 
-        double retval = (1 + betaSquare) * ((precision*recall) / (precision+recall));
+        double retval = (1 + betaSquare) * ((precision*recall) / (betaSquare*precision+recall));
         return retval;
     }
 
@@ -127,8 +127,8 @@ public class Evaluation<T> {
     public String getSummaryTxt() {
         StringBuilder buff = new StringBuilder();
 
-        buff.append(String.format("F1 = %.3f\n", getF1Score()));
-        buff.append(String.format("Acc = %.3f\n", getAccuracy()));
+        buff.append(String.format("F1 = %.6f\n", getF1Score()));
+        buff.append(String.format("Acc = %.6f\n", getAccuracy()));
         buff.append('\n');
 
         for(T clazz : mTruePositives.getAllClasses()) {

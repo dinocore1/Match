@@ -32,6 +32,7 @@ public class EvalTest {
         eval.update(false, false);
         eval.update(false, false);
         eval.update(false, false);
+        eval.update(true, false);
         summary = eval.getSummaryTxt();
 
 
