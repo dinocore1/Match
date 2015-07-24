@@ -3,7 +3,7 @@ package org.devsmart.match.neuralnet;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
-import org.devsmart.match.metric.FMeasure;
+import org.devsmart.match.metric.Evaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +73,7 @@ public class RBMTrainer2 {
         rbm.setWeights(weights);
     }
 
-    public static void calcF1(FMeasure measure, double[] inputVisible, float[] reconstructVisible) {
+    public static void calcF1(Evaluation measure, double[] inputVisible, float[] reconstructVisible) {
         assert inputVisible.length == reconstructVisible.length;
         for(int i=0;i<inputVisible.length;i++){
             measure.update(Math.round(inputVisible[i]) == 1, Math.round(reconstructVisible[i]) == 1);
@@ -82,7 +82,7 @@ public class RBMTrainer2 {
 
     public void calcError(long epoc, RBM2 rbm, Collection<TraningData> minibatch) {
 
-        FMeasure f1 = new FMeasure(1);
+        Evaluation f1 = new Evaluation();
         SummaryStatistics error = new SummaryStatistics();
 
         for(TraningData data : minibatch) {
@@ -100,7 +100,7 @@ public class RBMTrainer2 {
 
         double errorValue = error.getMean();
 
-        logger.info("epoch {} error: {} f1: {}", epoc, errorValue, f1.getValue());
+        logger.info("epoch {} error: {} f1: {}", epoc, errorValue, f1.getF1Score());
     }
 
     public void train(final long maxEpoch) {
