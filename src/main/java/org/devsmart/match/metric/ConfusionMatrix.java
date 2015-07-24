@@ -92,6 +92,10 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         return count;
     }
 
+    public long getNegitive(T clazz) {
+        return mTotal - getPositive(clazz);
+    }
+
 
     public long getTruePositive(T clazz) {
         return getCount(clazz, clazz);
