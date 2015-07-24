@@ -1,12 +1,12 @@
 package org.devsmart.match.metric;
 
 
-public class Evaluation {
+public class Evaluation<T> {
 
-    private Counter mTruePositives = new Counter();
-    private Counter mTrueNegitives = new Counter();
-    private Counter mFalseNegitives = new Counter();
-    private Counter mFalsePositives = new Counter();
+    private Counter<T> mTruePositives = new Counter<T>();
+    private Counter<T> mTrueNegitives = new Counter<T>();
+    private Counter<T> mFalseNegitives = new Counter<T>();
+    private Counter<T> mFalsePositives = new Counter<T>();
     private long mTotalCount = 0;
 
 
@@ -106,11 +106,11 @@ public class Evaluation {
         return retval;
     }
 
-    public void update(final Object expectedValue, final Object prediction) {
+    public void update(final T expectedValue, final T prediction) {
 
         if(expectedValue.equals(prediction)) {
             mTruePositives.increment(prediction);
-            for(Object clazz : mTruePositives.getAllClasses()) {
+            for(T clazz : mTruePositives.getAllClasses()) {
                 if(!clazz.equals(expectedValue)) {
                     mTrueNegitives.increment(clazz);
                 }
@@ -122,6 +122,20 @@ public class Evaluation {
 
         mTotalCount++;
 
+    }
+
+    public String getSummaryTxt() {
+        StringBuilder buff = new StringBuilder();
+
+        buff.append(String.format("F1 = %.3f\n", getF1Score()));
+        buff.append(String.format("Acc = %.3f\n", getAccuracy()));
+        buff.append('\n');
+
+        for(T clazz : mTruePositives.getAllClasses()) {
+            buff.append(String.format("%s predicted %d times\n", clazz, mTruePositives.getCount(clazz)));
+        }
+
+        return buff.toString();
     }
 
     @Override

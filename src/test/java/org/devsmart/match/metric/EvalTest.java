@@ -8,21 +8,33 @@ public class EvalTest {
 
     @Test
     public void testEval() {
-        Evaluation eval = new Evaluation();
+        Evaluation<Boolean> eval = new Evaluation<Boolean>();
 
-        eval.update(1, 1);
+        String summary = eval.getSummaryTxt();
+
+        eval.update(true, true);
+        summary = eval.getSummaryTxt();
         assertEquals(1.0, eval.getAccuracy(), 0.00001);
         assertEquals(1, eval.getTruePositive());
         assertEquals(0, eval.getTrueNegitive());
         assertEquals(0, eval.getFalseNegitive());
         assertEquals(0, eval.getFalsePositives());
 
-        eval.update(1, 0);
+        eval.update(true, false);
+        summary = eval.getSummaryTxt();
         assertEquals(0.5, eval.getAccuracy(), 0.00001);
 
-        eval.update(0, 0);
+        eval.update(false, false);
+        summary = eval.getSummaryTxt();
         assertEquals(2, eval.getTruePositive());
         assertEquals(0.66666, eval.getAccuracy(), 0.001);
+
+        eval.update(false, false);
+        eval.update(false, false);
+        eval.update(false, false);
+        summary = eval.getSummaryTxt();
+
+
 
     }
 }

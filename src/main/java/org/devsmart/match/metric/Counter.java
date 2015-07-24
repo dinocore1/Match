@@ -4,12 +4,12 @@ package org.devsmart.match.metric;
 import java.util.HashMap;
 import java.util.Set;
 
-public class Counter {
+public class Counter<T> {
 
     private static final int INTIAL_SIZE = 50;
 
 
-    private HashMap<Object, Integer> mIndexMap = new HashMap<Object, Integer>();
+    private HashMap<T, Integer> mIndexMap = new HashMap<T, Integer>();
     private long[] mCounts;
     private int mSlotsUsed = 0;
     private long mTotal = 0;
@@ -22,7 +22,7 @@ public class Counter {
         mCounts = new long[INTIAL_SIZE];
     }
 
-    public void increment(Object obj) {
+    public void increment(T obj) {
         Integer slot = mIndexMap.get(obj);
         if(slot == null) {
             ensureCapacity(mSlotsUsed + 1);
@@ -34,7 +34,7 @@ public class Counter {
         mTotal++;
     }
 
-    public long getCount(Object obj) {
+    public long getCount(T obj) {
         Integer key = mIndexMap.get(obj);
         if(key == null) {
             return 0;
@@ -47,7 +47,7 @@ public class Counter {
         return mTotal;
     }
 
-    public Set<Object> getAllClasses() {
+    public Set<T> getAllClasses() {
         return mIndexMap.keySet();
     }
 
