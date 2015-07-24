@@ -9,21 +9,26 @@ public class EvalTest {
     @Test
     public void testEval() {
 
-        int[] gold = new int[] {0, 1, 2, 0, 1, 2};
-        int[] pred = new int[] {0, 2, 1, 0, 0, 1};
+        int[] gold = new int[] {1, 0, 0, 0};
+        int[] pred = new int[] {1, 1, 1, 1};
 
         Evaluation<Integer> eval = new Evaluation<Integer>();
 
         for(int i=0;i<gold.length;i++){
             eval.update(gold[i], pred[i]);
-
         }
 
         System.out.println(eval.getSummaryTxt());
 
+        assertEquals(1, eval.getTruePositive(1));
 
-        assertEquals( 2d/6d, eval.getAccuracy(), 0.001);
-        assertEquals( 0.3333, eval.getF1Score(), 0.001);
+        assertEquals(3, eval.getFalseNegitive(0));
+
+        assertEquals(1d/4d, eval.getAccuracy(), 0.01);
+        assertEquals(1d/4d, eval.getPrecision(1), 0.01);
+        assertEquals(1d/1d, eval.getRecall(1), 0.01);
+        assertEquals(4d/10d, eval.getF1Score(), 0.01);
+
 
 
 

@@ -1,12 +1,18 @@
 package org.devsmart.match.metric;
 
 
-public class Evaluation<T> {
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 
-    private Counter<T> mTruePositives = new Counter<T>();
-    private Counter<T> mTrueNegitives = new Counter<T>();
-    private Counter<T> mFalseNegitives = new Counter<T>();
-    private Counter<T> mFalsePositives = new Counter<T>();
+import java.util.HashSet;
+
+public class Evaluation<T extends Comparable<T>> {
+
+    private ConfusionMatrix<T> mConfusionMatrix = new ConfusionMatrix<T>();
+    //private Counter<T> mTruePositives = new Counter<T>();
+    //private Counter<T> mTrueNegitives = new Counter<T>();
+    //private Counter<T> mFalseNegitives = new Counter<T>();
+    //private Counter<T> mFalsePositives = new Counter<T>();
+    private HashSet<T> mClassSet = new HashSet<T>();
     private long mTotalCount = 0;
 
 
@@ -15,12 +21,45 @@ public class Evaluation<T> {
      *
      * @return precision
      */
-    public double getPrecision() {
-        final double tp = getTruePositive();
-        final double fp = getFalsePositives();
+    public double getPrecision(T clazz) {
+        final double tp = mConfusionMatrix.getTruePositive(clazz);
+        final double fp = mConfusionMatrix.getFalsePositive(clazz);
 
-        final double at = tp + fp;
-        return tp / at;
+        return tp / (tp + fp);
+    }
+
+    /**
+     * Precision is the ratio of true positives to all predicted positives
+     *
+     * @return precision
+     */
+    public double getPrecision() {
+        Mean mean = new Mean();
+        for(T clazz : mClassSet) {
+            double p = getPrecision(clazz);
+            if(!Double.isNaN(p)){
+                mean.increment(p);
+            }
+        }
+        return mean.getResult();
+    }
+
+    /**
+     *  Sensitivity, (a.k.a recall or true positive rate) measures the proportion
+     *  of positives that are correctly identified as such (e.g., the percentage
+     *  of sick people who are correctly identified as having the condition).
+     *
+     * @return sensitivity
+     */
+    public double getSensitivity(T clazz) {
+        final double tp = mConfusionMatrix.getTruePositive(clazz);
+        final double fn = mConfusionMatrix.getFalseNegitive(clazz);
+
+        return tp / (tp + fn);
+    }
+
+    public double getRecall(T clazz) {
+        return getSensitivity();
     }
 
     /**
@@ -31,11 +70,18 @@ public class Evaluation<T> {
      * @return sensitivity
      */
     public double getSensitivity() {
-        final double tp = getTruePositive();
-        final double fn = getFalseNegitive();
+        Mean mean = new Mean();
+        for(T clazz : mClassSet) {
+            double s = getSensitivity(clazz);
+            if(!Double.isNaN(s)) {
+                mean.increment(s);
+            }
+        }
+        return mean.getResult();
+    }
 
-        final double t = tp + fn;
-        return tp / t;
+    public double getRecall() {
+        return getSensitivity();
     }
 
     /**
@@ -44,39 +90,59 @@ public class Evaluation<T> {
      * healthy people who are correctly identified as not having the condition).
      * @return
      */
-    public double getSpecificity() {
-        final double tn = getTrueNegitive();
-        final double fp = getFalsePositives();
+    public double getSpecificity(T clazz) {
+        final double tn = getTrueNegitive(clazz);
+        final double fp = getFalsePositives(clazz);
 
-        final double t = tn + fp;
-        if(t == 0) {
-            return 0;
-        } else {
-            return tn / t;
-        }
+        return tn / (tn + fp);
     }
 
-    public double getAccuracy() {
-        final double t = getTruePositive() + getTrueNegitive();
-        final double population = mTotalCount;
+    public double getSpecificity() {
+        Mean mean = new Mean();
+        for(T clazz : mClassSet) {
+            double s = getSpecificity(clazz);
+            if(!Double.isNaN(s)){
+                mean.increment(s);
+            }
+        }
+        return mean.getResult();
+    }
+
+    public double getAccuracy(T clazz) {
+        final double t = getTruePositive(clazz) + getTrueNegitive(clazz);
+        final double population = t + getPositives(clazz) + getNegitive(clazz);
 
         return  t / population;
     }
 
-    public long getTruePositive() {
-        return mTruePositives.getTotal();
+    public double getAccuracy() {
+        Mean mean = new Mean();
+        for(T clazz : mClassSet) {
+            double a = getAccuracy(clazz);
+            if(!Double.isNaN(a)) {
+                mean.increment(a);
+            }
+        }
+        return mean.getResult();
     }
 
-    public long getTrueNegitive() {
-        return mTrueNegitives.getTotal();
+    public long getTruePositive(T clazz) {
+        return mConfusionMatrix.getTruePositive(clazz);
+        //return mTruePositives.getCount(clazz);
     }
 
-    public long getFalsePositives() {
-        return mFalsePositives.getTotal();
+    public long getTrueNegitive(T clazz) {
+        return mTrueNegitives.getCount(clazz);
     }
 
-    public long getFalseNegitive() {
-        return mFalseNegitives.getTotal();
+    public long getFalsePositives(T clazz) {
+        return mConfusionMatrix.getFalsePositive(clazz);
+        //return mFalsePositives.getCount(clazz);
+    }
+
+    public long getFalseNegitive(T clazz) {
+        return mConfusionMatrix.getFalsePositive(clazz);
+        //return mFalseNegitives.getCount(clazz);
     }
 
 
@@ -96,11 +162,17 @@ public class Evaluation<T> {
 
     public void update(final T expectedValue, final T prediction) {
 
+        mClassSet.add(expectedValue);
+        mClassSet.add(prediction);
+        mConfusionMatrix.update(expectedValue, prediction);
+
+
+        if(!mTrueNegitives.getAllClasses().contains(expectedValue)) {
+            mTrueNegitives.set(expectedValue, mTotalCount);
+        }
+
         if(expectedValue.equals(prediction)) {
             mTruePositives.increment(expectedValue);
-            if(!mTrueNegitives.getAllClasses().contains(prediction)) {
-                mTrueNegitives.set(prediction, mTrueNegitives.getMaxCount());
-            }
             for(T clazz : mTruePositives.getAllClasses()) {
                 if(!clazz.equals(prediction)) {
                     mTrueNegitives.increment(clazz);
@@ -133,5 +205,4 @@ public class Evaluation<T> {
     public String toString() {
         return String.format("F1 = %.3f", getF1Score());
     }
-
 }

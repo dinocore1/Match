@@ -3,13 +3,14 @@ package org.devsmart.match.metric;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class Counter<T> {
 
     private static final int INTIAL_SIZE = 50;
 
 
-    private HashMap<T, Integer> mIndexMap = new HashMap<T, Integer>();
+    private TreeMap<T, Integer> mIndexMap = new TreeMap<T, Integer>();
     private long[] mCounts;
     private int mSlotsUsed = 0;
     private long mTotal = 0;
