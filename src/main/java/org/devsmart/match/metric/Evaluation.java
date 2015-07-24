@@ -7,6 +7,7 @@ public class Evaluation {
     private Counter mTrueNegitives = new Counter();
     private Counter mFalseNegitives = new Counter();
     private Counter mFalsePositives = new Counter();
+    private long mTotalCount = 0;
 
 
     /**
@@ -64,6 +65,16 @@ public class Evaluation {
         }
     }
 
+    public double getAccuracy() {
+        if(mTotalCount == 0) {
+            return 0;
+        } else {
+            final double tp = getTruePositive();
+
+            return  tp / mTotalCount;
+        }
+    }
+
     public long getTruePositive() {
         return mTruePositives.getTotal();
     }
@@ -98,7 +109,7 @@ public class Evaluation {
     public void update(final Object expectedValue, final Object prediction) {
 
         if(expectedValue.equals(prediction)) {
-            mTruePositives.increment(expectedValue);
+            mTruePositives.increment(prediction);
             for(Object clazz : mTruePositives.getAllClasses()) {
                 if(!clazz.equals(expectedValue)) {
                     mTrueNegitives.increment(clazz);
@@ -108,6 +119,8 @@ public class Evaluation {
             mFalsePositives.increment(prediction);
             mFalseNegitives.increment(expectedValue);
         }
+
+        mTotalCount++;
 
     }
 

@@ -23,14 +23,14 @@ public class Counter {
     }
 
     public void increment(Object obj) {
-        Integer key = mIndexMap.get(obj);
-        if(key == null) {
+        Integer slot = mIndexMap.get(obj);
+        if(slot == null) {
             ensureCapacity(mSlotsUsed + 1);
-            key = mSlotsUsed;
-            mIndexMap.put(obj, key);
+            slot = mSlotsUsed;
+            mIndexMap.put(obj, slot);
             mSlotsUsed++;
         }
-        mCounts[key] += 1;
+        mCounts[slot] += 1;
         mTotal++;
     }
 
