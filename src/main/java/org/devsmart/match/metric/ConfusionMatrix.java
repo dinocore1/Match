@@ -43,6 +43,9 @@ public class ConfusionMatrix<T extends Comparable<T>> {
                     .result();
         }
     }
+
+
+
     private Set<T> mAllClasses = new HashSet<T>();
     private TreeSet<Entry> mMatrix = new TreeSet<Entry>();
     private long mTotal = 0;
@@ -72,7 +75,12 @@ public class ConfusionMatrix<T extends Comparable<T>> {
     private synchronized Entry getEntry(T standard, T predected) {
         entry.standard = standard;
         entry.predected = predected;
-        return mMatrix.floor(entry);
+        Entry retval = mMatrix.floor(entry);
+        if(retval != null && retval.equals(entry)) {
+            return retval;
+        } else {
+            return null;
+        }
     }
 
     public long getCount(T standard, T predected) {
@@ -82,6 +90,10 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         } else {
             return entry.count;
         }
+    }
+
+    public Set<T> getClassSet() {
+        return mAllClasses;
     }
 
     public long getPositive(T clazz) {
@@ -101,10 +113,28 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         return getCount(clazz, clazz);
     }
 
-    public long getTruePositives() {
+    public long getTruePositive() {
         long count = 0;
         for(T c : mAllClasses) {
             count += getTruePositive(c);
+        }
+        return count;
+    }
+
+    public long getTrueNegitive(T clazz) {
+        long count = 0;
+        for(T c : mAllClasses) {
+            if(!c.equals(clazz)) {
+                count += getCount(c, c);
+            }
+        }
+        return count;
+    }
+
+    public long getTrueNegitive() {
+        long count = 0;
+        for(T c : mAllClasses) {
+            count += getTrueNegitive(c);
         }
         return count;
     }
@@ -126,6 +156,14 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         return count;
     }
 
+    public long getFalsePositive() {
+        long count = 0;
+        for(T c : mAllClasses) {
+            count += getFalsePositive(c);
+        }
+        return count;
+    }
+
     /**
      * Return the number of times that {@code clazz} was the correct
      * answer but not correctly predicted
@@ -140,5 +178,32 @@ public class ConfusionMatrix<T extends Comparable<T>> {
             }
         }
         return count;
+    }
+
+    public long getFalseNegitive() {
+        long count = 0;
+        for(T c : mAllClasses) {
+            count += getFalseNegitive(c);
+        }
+        return count;
+    }
+
+    public Table getTable() {
+        Table retval = new Table();
+
+        for(T clazz : mAllClasses) {
+            retval.truePositive += getTruePositive(clazz);
+            retval.falsePositive += getFalsePositive(clazz);
+            retval.falseNegitive += getFalseNegitive(clazz);
+        }
+
+        return retval;
+    }
+
+    private static class Table {
+        double truePositive;
+        double trueNegitive;
+        double falsePositive;
+        double falseNegitive;
     }
 }
