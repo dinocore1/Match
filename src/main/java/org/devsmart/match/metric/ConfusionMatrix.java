@@ -150,7 +150,7 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         long count = 0;
         for(T c : mAllClasses) {
             if(!c.equals(clazz)) {
-                count += getCount(c, clazz);
+                count += getCount(clazz, c);
             }
         }
         return count;
@@ -174,7 +174,7 @@ public class ConfusionMatrix<T extends Comparable<T>> {
         long count = 0;
         for(T c : mAllClasses) {
             if(!c.equals(clazz)) {
-                count += getCount(clazz, c);
+                count += getCount(c, clazz);
             }
         }
         return count;

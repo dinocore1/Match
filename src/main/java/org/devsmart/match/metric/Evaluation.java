@@ -168,6 +168,8 @@ public class Evaluation<T extends Comparable<T>> {
         double retval = (1 + betaSquare) * ((precision*recall) / (betaSquare*precision+recall));
         return retval;
 
+
+
         /*
         Mean mean = new Mean();
         for(T c : mConfusionMatrix.getClassSet()) {
@@ -192,10 +194,15 @@ public class Evaluation<T extends Comparable<T>> {
 
         buff.append(String.format("F1 = %.6f\n", getF1Score()));
         buff.append(String.format("Acc = %.6f\n", getAccuracy()));
-        buff.append('\n');
 
-        for(T clazz : mConfusionMatrix.getClassSet()) {
-            buff.append(String.format("%s predicted %d times\n", clazz, mConfusionMatrix.getTruePositive(clazz)));
+        for(T a : mConfusionMatrix.getClassSet()) {
+            for(T b : mConfusionMatrix.getClassSet()) {
+                long count;
+                if(!a.equals(b) && (count = mConfusionMatrix.getCount(a, b)) > 0) {
+                    buff.append(String.format("\n%s predected as %s %d times", a, b, count));
+                }
+            }
+
         }
 
         return buff.toString();
