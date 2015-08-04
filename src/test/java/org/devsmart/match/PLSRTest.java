@@ -4,6 +4,7 @@ package org.devsmart.match;
 import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.commons.math3.util.ResizableDoubleArray;
 import org.junit.Test;
@@ -49,15 +50,17 @@ public class PLSRTest {
         PLSR plsr = new PLSR(toMatrix(xvalues), yvalues.getElements(), 2);
 
         SimpleRegression regression = new SimpleRegression(true);
+        SummaryStatistics errorStats = new SummaryStatistics();
 
         for(int i=0;i<xvalues.size();i++){
             double y = plsr.value(xvalues.get(i));
             regression.addData(yvalues.getElement(i), y);
+            errorStats.addValue( yvalues.getElement(i) - y );
             System.out.println(String.format("i:%d y = %f", i, y));
         }
 
         final double r2 = regression.getRSquare();
-        System.out.println(String.format("r2 = %f", r2));
+        System.out.println(String.format("r2 = %f RMSE = %f", r2, Math.sqrt(errorStats.getSumsq()/errorStats.getN())));
 
         assertTrue(r2 > 0.99);
 
