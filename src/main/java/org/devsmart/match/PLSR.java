@@ -24,14 +24,14 @@ public class PLSR {
 
         RealMatrix t = X.multiply(w);
 
-        RealMatrix W = MatrixUtils.createRealMatrix(w.getRowDimension(), l);
+        RealMatrix W = MatrixUtils.createRealMatrix(w.getRowDimension(), l+1);
         W.setColumn(0, w.getColumn(0));
 
-        RealMatrix P = MatrixUtils.createRealMatrix(w.getRowDimension(), l);
+        RealMatrix P = MatrixUtils.createRealMatrix(w.getRowDimension(), l+1);
 
-        double[] q = new double[l];
+        double[] q = new double[l+1];
 
-        for(int k=0;k<l;k++) {
+        for(int k=0;k<l+1;k++) {
             final double t_k = t.transpose().multiply(t).getEntry(0, 0);
 
             t.walkInRowOrder(new DefaultRealMatrixChangingVisitor() {
@@ -49,7 +49,7 @@ public class PLSR {
                 l = k;
                 break;
             }
-            if(k < l-1) {
+            if(k < l) {
                 X = X.subtract(t.multiply(p_k.transpose()).scalarMultiply(t_k));
                 w = X.transpose().multiply(MatrixUtils.createColumnRealMatrix(y));
                 W.setColumn(k+1, w.getColumn(0));
